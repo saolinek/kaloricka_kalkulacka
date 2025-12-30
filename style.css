@@ -357,6 +357,53 @@ input:focus {
     gap: 8px;
 }
 
+/* LIST ITEM V2 (Daily Log) */
+.list-item-v2 {
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.item-main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.item-right-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.item-kcal-v2 {
+    font-weight: 500;
+    color: var(--md-sys-color-primary);
+    font-size: 1.1rem;
+}
+
+.btn-delete-small {
+    background: none;
+    border: none;
+    color: #BA1A1A;
+    opacity: 0.4;
+    cursor: pointer;
+    padding: 8px;
+    font-size: 1.1rem;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-delete-small:hover {
+    opacity: 1;
+}
+
 /* RECIPE & INGREDIENT CARDS (Material 3) */
 .recipe-card {
     background-color: var(--md-sys-color-surface-container);

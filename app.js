@@ -1,4 +1,4 @@
-const APP_VERSION = 'v1.22.0';
+const APP_VERSION = 'v1.23.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // State management
@@ -164,6 +164,18 @@ function addItem(name, kcal) {
     render();
 }
 
+function deleteItem(id) {
+    state.items = state.items.filter(i => i.id !== id);
+    saveState();
+    render();
+}
+
+function deleteRecipe(id) {
+    state.recipes = state.recipes.filter(r => r.id !== id);
+    saveState();
+    render();
+}
+
 function updateWeight(val) {
     checkDateAndReset();
     state.weight = val ? parseFloat(val) : null;
@@ -268,7 +280,7 @@ function renderSelectRecipeList() {
             li.innerHTML = `
                 <div class="recipe-info">
                     <span class="recipe-name-main">${r.name}</span>
-                    <span class="recipe-meta-sub">${Math.round(totalKcal)} kcal / ${totalWeight} g (celý recept)</span>
+                    <span class="recipe-meta-sub">${Math.round(totalKcal)} kcal / ${totalWeight} g</span>
                 </div>
                 <button class="add-recipe-btn" title="Použít recept">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
@@ -311,8 +323,17 @@ function render() {
             el.dailyListContainer.classList.remove('hidden');
             [...state.items].reverse().forEach(item => {
                 const li = document.createElement('li'); 
-                li.className = 'list-item';
-                li.innerHTML = `<span class="item-name">${item.name}</span><span class="item-kcal">+${Math.round(item.kcal)}</span>`;
+                li.className = 'list-item-v2';
+                li.innerHTML = `
+                    <div class="item-main-info">
+                        <span class="item-name">${item.name}</span>
+                    </div>
+                    <div class="item-right-group">
+                        <span class="item-kcal-v2">${Math.round(item.kcal)} kcal</span>
+                        <button class="btn-delete-small" title="Smazat">✕</button>
+                    </div>
+                `;
+                li.querySelector('.btn-delete-small').onclick = () => deleteItem(item.id);
                 el.dailyList.appendChild(li);
             });
         } else el.dailyListContainer.classList.add('hidden');
@@ -327,16 +348,20 @@ function render() {
                 li.className = 'recipe-card';
                 if (r.incompatible) {
                     li.style.opacity = '0.5';
-                    li.innerHTML = `<div class="recipe-info"><span class="recipe-name-main">${r.name}</span><span class="recipe-meta-sub">Nekompatibilní verze</span></div>`;
+                    li.innerHTML = `<div class="recipe-info"><span class="recipe-name-main">${r.name}</span><span class="recipe-meta-sub">Nekompatibilní verze</span></div><button class="btn-delete-small">🗑️</button>`;
                 } else {
                     const { totalWeight, totalKcal } = calculateRecipeTotals(r.ingredients);
                     li.innerHTML = `
                         <div class="recipe-info">
                             <span class="recipe-name-main">${r.name}</span>
-                            <span class="recipe-meta-sub">${Math.round(totalKcal)} kcal / ${totalWeight} g (celý recept)</span>
+                            <span class="recipe-meta-sub">${Math.round(totalKcal)} kcal / ${totalWeight} g</span>
                         </div>
+                        <button class="btn-delete-small" title="Smazat recept">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
+                        </button>
                     `;
                 }
+                li.querySelector('.btn-delete-small').onclick = (e) => { e.stopPropagation(); deleteRecipe(r.id); };
                 el.recipesList.appendChild(li);
             });
         } else el.recipesPlaceholder.classList.remove('hidden');
