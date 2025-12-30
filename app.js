@@ -1,14 +1,14 @@
 // Definice verze pro cache management (při změně logiky zvýšit)
-const APP_VERSION = 'v1.5.0';
+const APP_VERSION = 'v1.7.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // State management
 let state = {
     date: null,
-    total: 0,
+    items: [], // [{ name: string, kcal: number, id: number }]
     target: 2200,
     weight: null,
-    activeView: 'overview' // overview | foods | stats
+    activeView: 'overview'
 };
 
 // DOM Elements
@@ -17,11 +17,27 @@ const elements = {
     displayCurrent: document.getElementById('display-current'),
     displayTarget: document.getElementById('display-target'),
     progressFill: document.getElementById('progress-fill'),
-    
-    // Inputs
     weightInput: document.getElementById('weight-input'),
-    form: document.getElementById('add-form'),
-    calorieInput: document.getElementById('calorie-input'),
+    
+    // List
+    listContainer: document.getElementById('daily-list-container'),
+    listElement: document.getElementById('daily-list'),
+    
+    // Buttons (Overview)
+    btnOpenAddCal: document.getElementById('btn-open-add-cal'),
+    btnOpenAddRecipe: document.getElementById('btn-open-add-recipe'),
+
+    // Overlays
+    overlayAddCal: document.getElementById('overlay-add-cal'),
+    overlayAddRecipe: document.getElementById('overlay-add-recipe'),
+    
+    // Add Calorie Form Elements
+    formAddCal: document.getElementById('form-add-cal'),
+    inputName: document.getElementById('input-name'),
+    inputKcal100: document.getElementById('input-kcal-100'),
+    inputGrams: document.getElementById('input-grams'),
+    btnCloseAddCal: document.getElementById('btn-close-add-cal'),
+    btnCloseAddRecipe: document.getElementById('btn-close-add-recipe'),
     
     // Views & Nav
     views: {
@@ -46,7 +62,7 @@ function init() {
     // Default values migration
     if (!state.activeView) state.activeView = 'overview';
     if (!state.target) state.target = 2200;
-    // weight can remain null/undefined
+    if (!Array.isArray(state.items)) state.items = [];
 
     checkDateAndReset();
     render();
@@ -67,6 +83,15 @@ function loadState() {
         if (stored) {
             const parsed = JSON.parse(stored);
             state = { ...state, ...parsed };
+            
+            // Migration for v1.7.0: Convert old 'total' to an item if items are empty
+            if (parsed.total > 0 && (!state.items || state.items.length === 0)) {
+                state.items = [{
+                    id: Date.now(),
+                    name: 'Importováno',
+                    kcal: parsed.total
+                }];
+            }
         }
     } catch (e) {
         console.error("Chyba při načítání stavu", e);
@@ -93,8 +118,8 @@ function checkDateAndReset() {
     if (state.date !== today) {
         console.log(`[App] Nový den detekován. Reset: ${state.date} -> ${today}`);
         state.date = today;
-        state.total = 0;
-        state.weight = null; // Reset váhy pro nový den
+        state.items = []; // Reset seznamu
+        state.weight = null;
         saveState();
     }
 }
@@ -110,20 +135,45 @@ function switchView(viewName) {
 }
 
 /**
+ * Overlay Management
+ */
+function openOverlay(overlayElement) {
+    if (!overlayElement) return;
+    overlayElement.classList.add('active');
+    const firstInput = overlayElement.querySelector('input');
+    if (firstInput) firstInput.focus();
+}
+
+function closeOverlay(overlayElement) {
+    if (!overlayElement) return;
+    overlayElement.classList.remove('active');
+    const form = overlayElement.querySelector('form');
+    if (form) form.reset();
+}
+
+/**
+ * Výpočet celkového součtu kalorií
+ */
+function getTotalCalories() {
+    return state.items.reduce((sum, item) => sum + item.kcal, 0);
+}
+
+/**
  * Vykreslení UI podle stavu
  */
 function render() {
+    const currentTotal = getTotalCalories();
+
     // 1. Render Dashboard Data
     if (elements.displayCurrent) {
-        elements.displayCurrent.textContent = state.total;
+        elements.displayCurrent.textContent = currentTotal;
         elements.displayTarget.textContent = state.target;
         
         // Progress Bar Calculation
-        const percentage = Math.min((state.total / state.target) * 100, 100);
+        const percentage = Math.min((currentTotal / state.target) * 100, 100);
         elements.progressFill.style.width = `${percentage}%`;
         
-        // Color change based on completion (optional visual cue, staying simple for now)
-        if (state.total > state.target) {
+        if (currentTotal > state.target) {
             elements.progressFill.classList.add('over-limit');
         } else {
             elements.progressFill.classList.remove('over-limit');
@@ -132,13 +182,15 @@ function render() {
 
     // 2. Render Inputs
     if (elements.weightInput) {
-        // Only update if not focused to avoid cursor jumping, or if empty
         if (document.activeElement !== elements.weightInput) {
             elements.weightInput.value = state.weight || '';
         }
     }
 
-    // 3. Render Views (visibility)
+    // 3. Render List
+    renderList();
+
+    // 4. Render Views (visibility)
     Object.keys(elements.views).forEach(key => {
         const el = elements.views[key];
         if (!el) return;
@@ -151,7 +203,7 @@ function render() {
         }
     });
 
-    // 4. Render Nav (active state)
+    // 5. Render Nav (active state)
     Object.keys(elements.navButtons).forEach(key => {
         const btn = elements.navButtons[key];
         if (!btn) return;
@@ -164,12 +216,44 @@ function render() {
 }
 
 /**
- * Přidání kalorií
+ * Vykreslení seznamu položek
  */
-function addCalories(amount) {
-    if (!amount || amount <= 0) return;
+function renderList() {
+    if (!elements.listContainer || !elements.listElement) return;
+
+    if (state.items.length === 0) {
+        elements.listContainer.classList.add('hidden');
+        return;
+    }
+
+    elements.listContainer.classList.remove('hidden');
+    elements.listElement.innerHTML = '';
+
+    // Seřadit od nejnovějšího (reverse order of addition basically)
+    // Nebo zachovat pořadí. Zde zachovám pořadí vložení.
+    const reversedItems = [...state.items].reverse();
+
+    reversedItems.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'list-item';
+        li.innerHTML = `
+            <span class="item-name">${item.name}</span>
+            <span class="item-kcal">${item.kcal} kcal</span>
+        `;
+        elements.listElement.appendChild(li);
+    });
+}
+
+/**
+ * Přidání položky (Item)
+ */
+function addItem(name, kcal) {
     checkDateAndReset();
-    state.total += parseInt(amount, 10);
+    state.items.push({
+        id: Date.now(),
+        name: name,
+        kcal: parseInt(kcal, 10)
+    });
     saveState();
     render();
 }
@@ -181,25 +265,13 @@ function updateWeight(val) {
     checkDateAndReset();
     state.weight = val ? parseFloat(val) : null;
     saveState();
-    // No explicit render call needed here usually if input is bound, but good practice
 }
 
 /**
  * Event Listeners
  */
 function setupEventListeners() {
-    if (elements.form) {
-        elements.form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const val = elements.calorieInput.value;
-            if (val) {
-                addCalories(val);
-                elements.calorieInput.value = '';
-                elements.calorieInput.blur();
-            }
-        });
-    }
-
+    // Weight Input
     if (elements.weightInput) {
         elements.weightInput.addEventListener('input', (e) => {
             updateWeight(e.target.value);
@@ -210,6 +282,30 @@ function setupEventListeners() {
     if (elements.navButtons.overview) elements.navButtons.overview.addEventListener('click', () => switchView('overview'));
     if (elements.navButtons.foods) elements.navButtons.foods.addEventListener('click', () => switchView('foods'));
     if (elements.navButtons.stats) elements.navButtons.stats.addEventListener('click', () => switchView('stats'));
+
+    // Open Overlays
+    if (elements.btnOpenAddCal) elements.btnOpenAddCal.addEventListener('click', () => openOverlay(elements.overlayAddCal));
+    if (elements.btnOpenAddRecipe) elements.btnOpenAddRecipe.addEventListener('click', () => openOverlay(elements.overlayAddRecipe));
+
+    // Close Overlays
+    if (elements.btnCloseAddCal) elements.btnCloseAddCal.addEventListener('click', () => closeOverlay(elements.overlayAddCal));
+    if (elements.btnCloseAddRecipe) elements.btnCloseAddRecipe.addEventListener('click', () => closeOverlay(elements.overlayAddRecipe));
+
+    // Handle Add Calorie Submit
+    if (elements.formAddCal) {
+        elements.formAddCal.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = elements.inputName.value.trim();
+            const kcal100 = parseFloat(elements.inputKcal100.value) || 0;
+            const grams = parseFloat(elements.inputGrams.value) || 0;
+            
+            if (name && kcal100 > 0 && grams > 0) {
+                const totalKcal = Math.round((kcal100 * grams) / 100);
+                addItem(name, totalKcal);
+                closeOverlay(elements.overlayAddCal);
+            }
+        });
+    }
 
     // Kontrola data při návratu do okna
     document.addEventListener('visibilitychange', () => {

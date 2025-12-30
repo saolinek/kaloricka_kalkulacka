@@ -42,16 +42,24 @@
                         <input type="number" id="weight-input" placeholder="0.0" step="0.1" inputmode="decimal">
                     </div>
 
-                    <div class="input-group">
-                        <label for="calorie-input">Přidat kalorie</label>
-                        <form id="add-form">
-                            <div class="add-row">
-                                <input type="number" id="calorie-input" placeholder="0" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
-                                <button type="submit" id="add-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-                                </button>
-                            </div>
-                        </form>
+                    <!-- Action Buttons -->
+                    <div class="actions-row">
+                        <button id="btn-open-add-cal" class="action-btn primary">
+                            <span class="btn-icon">+</span>
+                            Přidat kalorie
+                        </button>
+                        <button id="btn-open-add-recipe" class="action-btn secondary">
+                            <span class="btn-icon">✎</span>
+                            Přidat recept
+                        </button>
+                    </div>
+
+                    <!-- Daily List -->
+                    <div id="daily-list-container" class="daily-list-container hidden">
+                        <h3>Dnes snězeno</h3>
+                        <ul id="daily-list" class="daily-list">
+                            <!-- Items inserted via JS -->
+                        </ul>
                     </div>
 
                 </div>
@@ -71,6 +79,47 @@
                 </div>
             </section>
 
+        </div>
+
+        <!-- OVERLAYS (Full screen animations) -->
+        
+        <!-- Overlay: Přidat kalorie -->
+        <div id="overlay-add-cal" class="overlay">
+            <div class="overlay-header">
+                <h2>Přidat položku</h2>
+                <button id="btn-close-add-cal" class="icon-btn-close">✕</button>
+            </div>
+            <div class="overlay-content">
+                <form id="form-add-cal">
+                    <div class="input-group">
+                        <label for="input-name">Název položky</label>
+                        <input type="text" id="input-name" placeholder="Např. Banán" autocomplete="off" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-kcal-100">Kalorie na 100g</label>
+                        <input type="number" id="input-kcal-100" placeholder="0" inputmode="numeric" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-grams">Množství (g)</label>
+                        <input type="number" id="input-grams" placeholder="0" inputmode="numeric" required>
+                    </div>
+                    
+                    <div class="overlay-actions">
+                        <button type="submit" class="full-width-btn">Potvrdit a přidat</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Overlay: Přidat recept -->
+        <div id="overlay-add-recipe" class="overlay">
+             <div class="overlay-header">
+                <h2>Přidat recept</h2>
+                <button id="btn-close-add-recipe" class="icon-btn-close">✕</button>
+            </div>
+            <div class="overlay-content center-text">
+                <p style="opacity: 0.5;">Funkce připravujeme...</p>
+            </div>
         </div>
 
         <!-- Spodní navigace -->

@@ -9,6 +9,10 @@
     --md-sys-color-on-secondary: #FFFFFF;
     --md-sys-color-secondary-container: #D7E3F8;
     --md-sys-color-on-secondary-container: #101C2B;
+    
+    --md-sys-color-tertiary: #6D5E0F;
+    --md-sys-color-tertiary-container: #F8E287;
+    --md-sys-color-on-tertiary-container: #221B00;
 
     --md-sys-color-background: #FDFBFF;
     --md-sys-color-on-background: #1A1C1E;
@@ -82,17 +86,22 @@ body {
     flex-direction: column;
     height: 100%;
     width: 100%;
+    overflow: hidden; /* Ensure only internal parts scroll */
 }
 
 .view.hidden {
     display: none;
 }
 
-/* Overview Layout specific */
+/* Overview Layout */
 .content.overview-layout {
+    display: flex;
+    flex-direction: column;
     justify-content: flex-start;
-    padding: 20px 24px;
-    gap: 20px;
+    padding: 20px 24px 0 24px; /* Bottom padding removed for scroll */
+    gap: 24px;
+    height: 100%;
+    overflow: hidden;
 }
 
 .overview-header h1 {
@@ -101,9 +110,10 @@ body {
     text-align: left;
     color: var(--md-sys-color-on-background);
     font-weight: 500;
+    flex-shrink: 0;
 }
 
-/* Dashboard Card (Calories + Progress) */
+/* Dashboard Card */
 .dashboard-card {
     background-color: var(--md-sys-color-surface-container);
     border-radius: var(--md-sys-shape-corner-extra-large);
@@ -113,6 +123,7 @@ body {
     gap: 16px;
     width: 100%;
     max-width: 400px;
+    flex-shrink: 0;
 }
 
 .dashboard-text {
@@ -145,7 +156,6 @@ body {
     font-weight: 500;
 }
 
-/* Progress Bar */
 .progress-container {
     height: 12px;
     background-color: var(--md-sys-color-surface-container-high);
@@ -163,7 +173,7 @@ body {
 }
 
 .progress-fill.over-limit {
-    background-color: #BA1A1A; /* Error color for over limit */
+    background-color: #BA1A1A;
 }
 
 /* Inputs styling */
@@ -173,6 +183,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .input-group label {
@@ -182,7 +193,6 @@ body {
     margin-left: 12px;
 }
 
-/* Shared Input Style */
 input {
     background: var(--md-sys-color-surface-container-high);
     border: 1px solid transparent;
@@ -200,36 +210,173 @@ input:focus {
     border-color: var(--md-sys-color-primary);
 }
 
-/* Add Form Row */
-.add-row {
+/* ACTIONS ROW */
+.actions-row {
     display: flex;
-    gap: 10px;
+    gap: 16px;
+    width: 100%;
+    max-width: 400px;
+    flex-shrink: 0;
 }
 
-.add-row input {
+.action-btn {
     flex: 1;
-    font-size: 1.5rem; /* Larger for calorie input */
-}
-
-button[type="submit"] {
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-    border: none;
-    width: 64px;
+    height: 80px;
     border-radius: var(--md-sys-shape-corner-large);
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s;
+    gap: 8px;
+    transition: transform 0.1s;
 }
 
-button[type="submit"]:active {
+.action-btn:active {
+    transform: scale(0.98);
+}
+
+.action-btn.primary {
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
 }
 
-/* Standard Content Layout for other tabs */
+.action-btn.secondary {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.btn-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+/* DAILY LIST CONTAINER (SCROLLABLE) */
+.daily-list-container {
+    flex: 1; /* Takes remaining space */
+    width: 100%;
+    max-width: 400px;
+    overflow-y: auto; /* Local scroll */
+    padding-bottom: 24px;
+    min-height: 0; /* Important for flex child scrolling */
+    display: flex;
+    flex-direction: column;
+}
+
+.daily-list-container h3 {
+    font-size: 1rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 500;
+    margin-bottom: 12px;
+    padding-left: 12px;
+    flex-shrink: 0;
+}
+
+.daily-list-container.hidden {
+    display: none;
+}
+
+.daily-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.list-item {
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-name {
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.item-kcal {
+    font-weight: 500;
+    color: var(--md-sys-color-primary);
+}
+
+/* OVERLAYS */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--md-sys-color-background);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    
+    transform: translateY(110%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease;
+}
+
+.overlay.active {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.overlay-header {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.overlay-header h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-background);
+}
+
+.icon-btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--md-sys-color-on-surface-variant);
+    padding: 8px;
+    cursor: pointer;
+}
+
+.overlay-content {
+    flex: 1;
+    padding: 0 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+}
+
+.overlay-actions {
+    margin-top: 32px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.full-width-btn {
+    width: 100%;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    height: 56px;
+    border-radius: var(--md-sys-shape-corner-full);
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Standard Content Layout */
 .content.center-text {
     justify-content: center;
     align-items: center;
@@ -241,7 +388,7 @@ button[type="submit"]:active {
     font-size: 1.5rem;
 }
 
-/* M3 Bottom Navigation Bar */
+/* Bottom Nav */
 .bottom-nav {
     height: 80px;
     background-color: var(--md-sys-color-surface-container);
@@ -250,6 +397,7 @@ button[type="submit"]:active {
     align-items: center;
     padding-bottom: env(safe-area-inset-bottom);
     z-index: 100;
+    flex-shrink: 0;
 }
 
 .nav-item {
