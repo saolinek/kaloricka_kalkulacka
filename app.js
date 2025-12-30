@@ -1,8 +1,9 @@
-// Firebase SDK Imports (Modular)
+// Firebase SDK Imports (Modular CDN)
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
 
-const APP_VERSION = 'v1.31.0';
+const APP_VERSION = 'v1.32.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // --- FIREBASE CONFIG ---
@@ -12,13 +13,22 @@ const firebaseConfig = {
     projectId: "DOPLŇTE_PROJECT_ID",
     storageBucket: "DOPLŇTE_BUCKET.appspot.com",
     messagingSenderId: "DOPLŇTE_SENDER_ID",
-    appId: "DOPLŇTE_APP_ID"
+    appId: "DOPLŇTE_APP_ID",
+    measurementId: "DOPLŇTE_MEASUREMENT_ID"
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+let app, auth, provider, analytics;
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    provider = new GoogleAuthProvider();
+    if (firebaseConfig.measurementId !== "DOPLŇTE_MEASUREMENT_ID") {
+        analytics = getAnalytics(app);
+    }
+} catch (e) {
+    console.error("Firebase init fail", e);
+}
 
 // State management
 let state = {
@@ -31,10 +41,10 @@ let state = {
     activeView: 'overview'
 };
 
-// Auth State (Source of Truth)
+// Auth State
 let currentUser = null;
 
-// --- DATE HELPERS (Local Time) ---
+// --- DATE HELPERS ---
 
 function getLocalDateString() {
     const d = new Date();
@@ -53,63 +63,42 @@ function init() {
     el = {
         settingsVersion: document.getElementById('settings-version-display'),
         btnHardReset: document.getElementById('btn-hard-reset'),
-        
         authUnlogged: document.getElementById('auth-unlogged'),
         authLogged: document.getElementById('auth-logged'),
         userName: document.getElementById('user-name'),
         userEmail: document.getElementById('user-email'),
         btnLoginGoogle: document.getElementById('btn-login-google'),
         btnLogout: document.getElementById('btn-logout'),
-
         current: document.getElementById('display-current'),
         target: document.getElementById('display-target'),
         progress: document.getElementById('progress-fill'),
-        
         weight: document.getElementById('weight-input'),
         btnWeightConfirm: document.getElementById('btn-weight-confirm'),
-        
         dailyList: document.getElementById('daily-list'),
         dailyListContainer: document.getElementById('daily-list-container'),
         recipesList: document.getElementById('recipes-list'),
         recipesPlaceholder: document.getElementById('recipes-placeholder'),
         statsContent: document.getElementById('stats-content'),
-        
         listSelectRecipe: document.getElementById('list-select-recipe'),
         placeholderSelectRecipe: document.getElementById('placeholder-select-recipe'),
-        
-        views: {
-            overview: document.getElementById('view-overview'),
-            foods: document.getElementById('view-foods'),
-            stats: document.getElementById('view-stats'),
-            settings: document.getElementById('view-settings')
-        },
-        nav: {
-            overview: document.getElementById('nav-overview'),
-            foods: document.getElementById('nav-foods'),
-            stats: document.getElementById('nav-stats'),
-            settings: document.getElementById('nav-settings')
-        },
-        
+        views: { overview: document.getElementById('view-overview'), foods: document.getElementById('view-foods'), stats: document.getElementById('view-stats'), settings: document.getElementById('view-settings') },
+        nav: { overview: document.getElementById('nav-overview'), foods: document.getElementById('nav-foods'), stats: document.getElementById('nav-stats'), settings: document.getElementById('nav-settings') },
         overlayAddCal: document.getElementById('overlay-add-cal'),
         overlayAddRecipe: document.getElementById('overlay-add-recipe'),
         overlaySelectRecipe: document.getElementById('overlay-select-recipe'),
         overlayConsumeRecipe: document.getElementById('overlay-consume-recipe'),
-        
         btnOpenAddCal: document.getElementById('btn-open-add-cal'),
         btnOpenAddRecipe: document.getElementById('btn-open-add-recipe'),
         btnCreateRecipe: document.getElementById('btn-create-recipe'),
         btnAddIngredient: document.getElementById('btn-add-ingredient'),
         btnSaveSettings: document.getElementById('btn-save-settings'),
-        
         btnCloseAddCal: document.getElementById('btn-close-add-cal'),
         btnCloseAddRecipe: document.getElementById('btn-close-add-recipe'),
         btnCloseSelectRecipe: document.getElementById('btn-close-select-recipe'),
         btnCloseConsumeRecipe: document.getElementById('btn-close-consume-recipe'),
-        
         formAddCal: document.getElementById('form-add-cal'),
         formAddRecipe: document.getElementById('form-add-recipe'),
         formConsumeRecipe: document.getElementById('form-consume-recipe'),
-        
         inputName: document.getElementById('input-name'),
         inputKcal100: document.getElementById('input-kcal-100'),
         inputGrams: document.getElementById('input-grams'),
@@ -123,22 +112,21 @@ function init() {
 
     if (el.settingsVersion) el.settingsVersion.textContent = APP_VERSION;
 
-    // Hard Default State for Auth UI (Safety measure)
+    // MANDATORY: Hard Default State
     if (el.authUnlogged) el.authUnlogged.classList.remove('hidden');
     if (el.authLogged) el.authLogged.classList.add('hidden');
 
     loadState();
     checkDateAndReset();
     bindEvents();
-    initAuth(); // Setup Firebase listener, it will call renderAuth(user)
+    if (auth) initAuth();
     render();
     registerServiceWorker();
 }
 
-// --- AUTH LOGIC ---
+// --- AUTH ---
 
 function initAuth() {
-    // SINGLE POINT OF TRUTH for Auth UI
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         renderAuth(user);
@@ -146,30 +134,24 @@ function initAuth() {
 }
 
 async function loginGoogle() {
+    if (!auth) return;
     try { await signInWithPopup(auth, provider); }
     catch (e) { console.error("Login fail", e); }
 }
 
 async function logoutUser() {
-    try { 
-        await signOut(auth);
-        // UI will be updated by onAuthStateChanged
-    } catch (e) { 
-        console.error("Logout fail", e); 
-    }
+    if (!auth) return;
+    try { await signOut(auth); } catch (e) { console.error("Logout fail", e); }
 }
 
 function renderAuth(user) {
     if (!el.authUnlogged || !el.authLogged) return;
-
     if (user) {
-        // STATE: LOGGED IN
         el.authUnlogged.classList.add('hidden');
         el.authLogged.classList.remove('hidden');
         if (el.userName) el.userName.textContent = user.displayName || "Uživatel";
         if (el.userEmail) el.userEmail.textContent = user.email;
     } else {
-        // STATE: NOT LOGGED IN (user === null)
         el.authUnlogged.classList.remove('hidden');
         el.authLogged.classList.add('hidden');
         if (el.userName) el.userName.textContent = "";
@@ -177,7 +159,7 @@ function renderAuth(user) {
     }
 }
 
-// --- DATA LOGIC ---
+// --- DATA ---
 
 function loadState() {
     try {
@@ -218,16 +200,18 @@ function switchView(viewName) { state.activeView = viewName; saveState(); render
 
 async function hardResetApp() {
     if (!confirm("⚠️ OPRAVDU vymazat všechna data, cache a restartovat aplikaci?")) return;
-    localStorage.clear(); sessionStorage.clear();
-    if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
-    }
-    if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map(reg => reg.unregister()));
-    }
-    window.location.reload(true);
+    try {
+        localStorage.clear(); sessionStorage.clear();
+        if ('caches' in window) {
+            const names = await caches.keys();
+            await Promise.all(names.map(n => caches.delete(n)));
+        }
+        if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(r => r.unregister()));
+        }
+        window.location.reload(true);
+    } catch (err) { window.location.reload(); }
 }
 
 // --- UI HELPERS ---
@@ -308,7 +292,7 @@ function renderStats() {
     if (!el.statsContent) return; const all = Object.keys(state.history).sort();
     if (all.length === 0) { el.statsContent.innerHTML = '<div class="center-placeholder"><p>Zatím žádná data.</p></div>'; return; }
     const wData = all.filter(d => state.history[d].weight).map(d => ({ date: d, value: state.history[d].weight }));
-    let html = ''; if (wData.length > 0) html += `<div class="chart-container growable-chart"><h3>Vývoj váhy (kg)</h3><div class="svg-chart-wrapper responsive-svg-container">${generateWeightSVG(wData)}</div></div>`;
+    let html = ''; if (wData.length > 0) html += `<div class="chart-container growable-chart" style="flex: 2; min-height: 350px;"><h3>Vývoj váhy (kg)</h3><div class="svg-chart-wrapper responsive-svg-container">${generateWeightSVG(wData)}</div></div>`;
     else html += `<div class="chart-container"><p style="opacity:0.5; font-size:0.8rem;">Zatím žádná data o váze.</p></div>`;
     html += '<h3 style="margin: 20px 0 10px 12px; font-size: 1.1rem; opacity: 0.8; font-weight: 500;">Historie dní</h3><ul class="daily-list" style="flex-shrink: 0; padding-bottom: 40px;">';
     [...all].reverse().forEach(d => { const h = state.history[d]; const lbl = new Date(d).toLocaleDateString('cs-CZ', { weekday: 'short', day: 'numeric', month: 'numeric' }); html += `<li class="list-item-v2"><span>${lbl}</span><div style="text-align:right"><div>${Math.round(h.total)} kcal</div><div style="font-size:0.8em;opacity:0.7">${h.weight ? h.weight + ' kg' : ''}</div></div></li>`; });
