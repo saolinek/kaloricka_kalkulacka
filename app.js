@@ -3,28 +3,30 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
 
-const APP_VERSION = 'v1.32.0';
+const APP_VERSION = 'v1.34.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // --- FIREBASE CONFIG ---
 const firebaseConfig = {
-    apiKey: "DOPLŇTE_API_KEY",
-    authDomain: "DOPLŇTE_DOMAIN.firebaseapp.com",
-    projectId: "DOPLŇTE_PROJECT_ID",
-    storageBucket: "DOPLŇTE_BUCKET.appspot.com",
-    messagingSenderId: "DOPLŇTE_SENDER_ID",
-    appId: "DOPLŇTE_APP_ID",
-    measurementId: "DOPLŇTE_MEASUREMENT_ID"
+  apiKey: "AIzaSyB_dnACYt-hW0J1_H4-fteRMZ-ps5gXH4U",
+  authDomain: "kaloricka-kalkulacka.firebaseapp.com",
+  projectId: "kaloricka-kalkulacka",
+  storageBucket: "kaloricka-kalkulacka.firebasestorage.app",
+  messagingSenderId: "1033390420010",
+  appId: "1:1033390420010:web:230d237833ba36abdc9353",
+  measurementId: "G-5694GG9PPL"
 };
 
-// Initialize Firebase
+// Initialize Firebase (fail-safe)
 let app, auth, provider, analytics;
 try {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    provider = new GoogleAuthProvider();
-    if (firebaseConfig.measurementId !== "DOPLŇTE_MEASUREMENT_ID") {
-        analytics = getAnalytics(app);
+    if (firebaseConfig.apiKey) {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        provider = new GoogleAuthProvider();
+        if (firebaseConfig.measurementId) {
+            analytics = getAnalytics(app);
+        }
     }
 } catch (e) {
     console.error("Firebase init fail", e);
