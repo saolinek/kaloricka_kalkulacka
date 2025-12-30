@@ -6,25 +6,63 @@
     <title>Kalorická kalkulačka</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#222222">
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <meta name="theme-color" content="#EEF0F4">
 </head>
 <body>
 
     <main id="app">
-        <div class="content">
-            <h1>Dnešní příjem</h1>
+        
+        <!-- Container pro přepínatelné pohledy -->
+        <div id="views-container">
+            <div id="app-version-display"></div>
             
-            <form id="add-form">
-                <input type="number" id="calorie-input" placeholder="0" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
-                <button type="submit" id="add-btn">Přidat položku</button>
-            </form>
+            <!-- 1. PŘEHLED DNES -->
+            <section id="view-overview" class="view">
+                <div class="content">
+                    <h1>Dnešní příjem</h1>
+                    <form id="add-form">
+                        <input type="number" id="calorie-input" placeholder="0" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+                        <button type="submit" id="add-btn">Přidat položku</button>
+                    </form>
+                </div>
+                <div class="overview-footer">
+                    <div class="total-label">Celkem dnes</div>
+                    <div class="total-value"><span id="total-display">0</span> kcal</div>
+                </div>
+            </section>
+
+            <!-- 2. POTRAVINY A RECEPTY -->
+            <section id="view-foods" class="view hidden">
+                <div class="content center-text">
+                    <h2>Potraviny a recepty</h2>
+                </div>
+            </section>
+
+            <!-- 3. STATISTIKY -->
+            <section id="view-stats" class="view hidden">
+                <div class="content center-text">
+                    <h2>Statistiky</h2>
+                </div>
+            </section>
+
         </div>
 
-        <footer class="sticky-footer">
-            <div class="total-label">Celkem dnes</div>
-            <div class="total-value"><span id="total-display">0</span> kcal</div>
-        </footer>
+        <!-- Spodní navigace -->
+        <nav class="bottom-nav">
+            <button id="nav-overview" class="nav-item">
+                <span class="nav-icon">●</span>
+                <span class="nav-label">Přehled</span>
+            </button>
+            <button id="nav-foods" class="nav-item">
+                <span class="nav-icon">■</span>
+                <span class="nav-label">Recepty</span>
+            </button>
+            <button id="nav-stats" class="nav-item">
+                <span class="nav-icon">▲</span>
+                <span class="nav-label">Statistiky</span>
+            </button>
+        </nav>
+
     </main>
 
     <script type="module" src="app.js"></script>

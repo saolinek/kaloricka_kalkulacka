@@ -1,25 +1,51 @@
 :root {
-    --bg-color: #1a1a1a;
-    --text-color: #ffffff;
-    --primary-color: #4CAF50;
-    --secondary-bg: #2d2d2d;
-    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Material Design 3 Light Theme Colors (Blue/Pro) */
+    --md-sys-color-primary: #005FAF; /* Sytá modrá pro akcenty */
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-primary-container: #D6E3FF;
+    --md-sys-color-on-primary-container: #001B3D;
+    
+    --md-sys-color-secondary: #535F70;
+    --md-sys-color-on-secondary: #FFFFFF;
+    --md-sys-color-secondary-container: #D7E3F8;
+    --md-sys-color-on-secondary-container: #101C2B;
+
+    --md-sys-color-background: #FDFBFF; /* Téměř bílá */
+    --md-sys-color-on-background: #1A1C1E;
+    
+    --md-sys-color-surface: #FDFBFF;
+    --md-sys-color-on-surface: #1A1C1E;
+    
+    --md-sys-color-surface-container: #EEF0F4; /* Světle šedá pro kontejnery */
+    --md-sys-color-surface-container-high: #E8EBF1;
+    
+    --md-sys-color-outline: #74777F;
+    --md-sys-color-outline-variant: #C4C6CF;
+
+    --md-sys-shape-corner-small: 8px;
+    --md-sys-shape-corner-medium: 12px;
+    --md-sys-shape-corner-large: 16px;
+    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-full: 9999px;
+
+    --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
     font-family: var(--font-family);
     height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Zabrání scrollování celého body */
+    overflow: hidden;
 }
 
 #app {
@@ -29,91 +55,231 @@ body {
     width: 100%;
 }
 
+/* Views Container */
+#views-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--md-sys-color-background);
+    /* Version Display Styling */
+}
+
+/* Version Display */
+#app-version-display {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-size: 0.7rem;
+    color: var(--md-sys-color-outline);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 50;
+}
+
+.view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.view.hidden {
+    display: none;
+}
+
+/* Content Layout */
 .content {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 24px;
+}
+
+.content.center-text h2 {
+    color: var(--md-sys-color-on-surface);
+    opacity: 0.6;
+    font-weight: 400;
+    font-size: 1.5rem;
 }
 
 h1 {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-    opacity: 0.7;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 2rem;
+    line-height: 2.5rem;
+    margin-bottom: 2.5rem;
+    color: var(--md-sys-color-on-background);
+    font-weight: 500;
+    text-align: center;
 }
 
+/* Form Styles */
 form {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 320px;
-    gap: 15px;
+    max-width: 360px;
+    gap: 24px;
 }
 
+/* M3 Input Field */
 input[type="number"] {
-    background: var(--secondary-bg);
+    background: var(--md-sys-color-surface-container-high);
     border: 2px solid transparent;
-    border-radius: 12px;
-    color: white;
-    font-size: 2.5rem;
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    color: var(--md-sys-color-on-surface);
+    font-size: 3rem;
+    font-weight: 400;
     text-align: center;
-    padding: 20px;
+    padding: 24px;
     width: 100%;
     outline: none;
-    transition: border-color 0.2s;
-    -moz-appearance: textfield;
-}
-
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+    transition: all 0.2s cubic-bezier(0.2, 0.0, 0, 1.0);
+    /* Jemnější stín pro light mode */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 input[type="number"]:focus {
-    border-color: var(--primary-color);
+    background: var(--md-sys-color-surface-container);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-surface);
 }
 
-button {
-    background-color: var(--primary-color);
-    color: white;
+input[type="number"]::placeholder {
+    color: var(--md-sys-color-outline);
+}
+
+/* M3 Filled Button */
+button[type="submit"] {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
     border: none;
-    padding: 18px;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: 600;
+    height: 56px;
+    border-radius: var(--md-sys-shape-corner-full);
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0.1px;
     cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    active: transform: scale(0.98);
+    box-shadow: 0 4px 8px 3px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-button:active {
-    opacity: 0.9;
+button[type="submit"]:active {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    box-shadow: none;
 }
 
-.sticky-footer {
-    background-color: var(--secondary-bg);
-    padding: 20px 30px;
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
+/* Overview Specific Footer (Total) */
+.overview-footer {
+    background-color: var(--md-sys-color-primary-container); /* Výraznější kontejner pro total */
+    margin: 16px;
+    padding: 24px;
+    border-radius: var(--md-sys-shape-corner-extra-large);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .total-label {
     font-size: 1rem;
-    opacity: 0.8;
+    color: var(--md-sys-color-on-primary-container);
+    font-weight: 500;
 }
 
 .total-value {
-    font-size: 1.8rem;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-primary-container); /* Kontrastní barva pro text v kontejneru */
+}
+
+/* M3 Bottom Navigation Bar */
+.bottom-nav {
+    height: 80px;
+    background-color: var(--md-sys-color-surface-container);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 100;
+}
+
+.nav-item {
+    background: none;
+    border: none;
+    color: var(--md-sys-color-on-surface-variant); /* Tmavší šedá pro neaktivní */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 64px;
+    height: 100%;
+    gap: 4px;
+}
+
+/* Active Indicator */
+.nav-icon-container {
+    width: 64px;
+    height: 32px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.nav-icon {
+    font-size: 1.5rem;
+    display: block;
+    line-height: 1;
+}
+
+.nav-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Active State */
+.nav-item.active .nav-icon-container {
+    background-color: var(--md-sys-color-secondary-container); /* Jemnější aktivní stav */
+}
+
+.nav-item.active .nav-icon {
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.nav-item.active .nav-label {
+    color: var(--md-sys-color-on-surface);
     font-weight: 700;
-    color: var(--primary-color);
+}
+
+/* Inactive State Icons */
+.nav-item:not(.active) .nav-icon {
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.8;
+}
+
+.nav-item span.nav-icon {
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    width: 64px;
+    height: 32px;
+    border-radius: 16px;
+}
+
+.nav-item.active span.nav-icon {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
 }
