@@ -1,4 +1,4 @@
-const APP_VERSION = 'v1.17.0';
+const APP_VERSION = 'v1.18.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // State management
@@ -294,9 +294,9 @@ function renderStats() {
     let html = '';
 
     if (weightData.length > 0) {
-        html += `<div class="chart-container">
+        html += `<div class="chart-container growable-chart">
             <h3>Vývoj váhy (kg)</h3>
-            <div class="svg-chart-wrapper">
+            <div class="svg-chart-wrapper responsive-svg-container">
                 ${generateWeightSVG(weightData)}
             </div>
         </div>`;
@@ -305,7 +305,7 @@ function renderStats() {
     }
 
     html += '<h3 style="margin: 20px 0 10px 12px; font-size: 1rem; opacity: 0.7;">Historie dní</h3>';
-    html += '<ul class="daily-list">';
+    html += '<ul class="daily-list" style="flex-shrink: 0;">'; // History list shouldn't eat the chart space
     [...allDates].reverse().forEach(d => {
         const h = state.history[d];
         const dayLabel = new Date(d).toLocaleDateString('cs-CZ', { weekday: 'short', day: 'numeric', month: 'numeric' });
@@ -323,38 +323,49 @@ function renderStats() {
 }
 
 function generateWeightSVG(data) {
-    const width = 500;
-    const height = 200;
-    const padding = 40;
+    const width = 1000;  // High resolution coordinates for viewBox
+    const height = 500;
+    const paddingX = 60;
+    const paddingY = 40;
 
-    const weights = data.map(d => d.value);
-    const minW = Math.min(...weights) - 0.5;
-    const maxW = Math.max(...weights) + 0.5;
-    const rangeW = maxW - minW || 1;
+    const minW = 0;
+    const maxW = 100;
+    const rangeW = 100;
 
-    const getX = (index) => padding + (index * (width - 2 * padding) / (data.length - 1 || 1));
-    const getY = (val) => height - padding - ((val - minW) / rangeW * (height - 2 * padding));
+    const getX = (index) => paddingX + (index * (width - 2 * paddingX) / (data.length - 1 || 1));
+    const getY = (val) => {
+        const clippedVal = Math.max(minW, Math.min(maxW, val));
+        return height - paddingY - (clippedVal / rangeW * (height - 2 * paddingY));
+    };
 
     let points = data.map((d, i) => `${getX(i)},${getY(d.value)}`).join(' ');
     
-    let svg = `<svg viewBox="0 0 ${width} ${height}" class="weight-svg">
-        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="#C4C6CF" />
-        <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="#C4C6CF" />
-        <polyline fill="none" stroke="var(--md-sys-color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+    let svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%; height:100%; display:block;">
+        <!-- Axes -->
+        <line x1="${paddingX}" y1="${height - paddingY}" x2="${width - paddingX}" y2="${height - paddingY}" stroke="#C4C6CF" stroke-width="2" />
+        <line x1="${paddingX}" y1="${paddingY}" x2="${paddingX}" y2="${height - paddingY}" stroke="#C4C6CF" stroke-width="2" />
+        
+        <!-- Y-Axis Fixed Marks (0, 25, 50, 75, 100) -->
+        ${[0, 25, 50, 75, 100].map(v => `
+            <line x1="${paddingX - 5}" y1="${getY(v)}" x2="${paddingX}" y2="${getY(v)}" stroke="#C4C6CF" stroke-width="2" />
+            <text x="${paddingX - 10}" y="${getY(v) + 5}" font-size="16" text-anchor="end" fill="#74777F">${v}</text>
+        `).join('')}
+
+        <!-- Data Line -->
+        <polyline fill="none" stroke="var(--md-sys-color-primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
     `;
 
     data.forEach((d, i) => {
         const x = getX(i);
         const y = getY(d.value);
-        svg += `<circle cx="${x}" cy="${y}" r="4" fill="var(--md-sys-color-primary)" />`;
-        if (data.length < 10 || i % Math.floor(data.length / 5) === 0) {
+        svg += `<circle cx="${x}" cy="${y}" r="6" fill="var(--md-sys-color-primary)" />`;
+        
+        // Dynamic labels for every few points to avoid crowding
+        if (data.length < 12 || i % Math.ceil(data.length / 8) === 0 || i === data.length - 1) {
             const dateLabel = new Date(d.date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
-            svg += `<text x="${x}" y="${height - 10}" font-size="12" text-anchor="middle" fill="#74777F">${dateLabel}</text>`;
+            svg += `<text x="${x}" y="${height - 10}" font-size="16" text-anchor="middle" fill="#74777F">${dateLabel}</text>`;
         }
     });
-
-    svg += `<text x="${padding - 5}" y="${getY(minW + 0.5)}" font-size="12" text-anchor="end" fill="#74777F">${minW.toFixed(1)}</text>`;
-    svg += `<text x="${padding - 5}" y="${getY(maxW - 0.5)}" font-size="12" text-anchor="end" fill="#74777F">${maxW.toFixed(1)}</text>`;
 
     svg += `</svg>`;
     return svg;
