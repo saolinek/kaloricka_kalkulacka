@@ -15,14 +15,6 @@
         
         <!-- Container pro přepínatelné pohledy -->
         <div id="views-container">
-            <div id="app-version-display"></div>
-            
-            <!-- DEBUG BUTTON -->
-            <button id="btn-debug-reset" title="Resetovat aplikaci">
-                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
-                    <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
-                </svg>
-            </button>
             
             <!-- 1. PŘEHLED DNES -->
             <section id="view-overview" class="view">
@@ -124,6 +116,36 @@
                             <input type="number" id="input-target-kcal" placeholder="2200" inputmode="numeric">
                             <button id="btn-save-settings" class="icon-btn-small" title="Uložit">✓</button>
                         </div>
+                    </div>
+
+                    <!-- ACCOUNT SECTION -->
+                    <div class="settings-section" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--md-sys-color-outline-variant);">
+                        <h2 style="font-size: 1rem; opacity: 0.7; margin-bottom: 15px;">Účet</h2>
+                        <div id="auth-unlogged" class="auth-box">
+                            <button id="btn-login-google" class="full-width-btn secondary" style="border: 1px solid var(--md-sys-color-outline);">
+                                Přihlásit se přes Google
+                            </button>
+                        </div>
+                        <div id="auth-logged" class="auth-box hidden">
+                            <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px;">
+                                <span id="user-name" style="font-weight: 500;"></span>
+                                <span id="user-email" style="font-size: 0.85rem; opacity: 0.7;"></span>
+                            </div>
+                            <button id="btn-logout" class="action-btn secondary" style="height: 40px; width: auto; padding: 0 20px; font-size: 0.9rem;">
+                                Odhlásit se
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--md-sys-color-outline-variant);">
+                        <h2 style="font-size: 1rem; opacity: 0.7; margin-bottom: 15px;">O aplikaci</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <span style="font-size: 0.9rem;">Verze aplikace</span>
+                            <span id="settings-version-display" style="font-weight: 500; opacity: 0.8;">-</span>
+                        </div>
+                        <button id="btn-hard-reset" class="action-btn secondary" style="height: 50px; width: 100%; border: 1px solid #BA1A1A; color: #BA1A1A;">
+                            Vymazat cache / reset aplikace
+                        </button>
                     </div>
                 </div>
             </section>

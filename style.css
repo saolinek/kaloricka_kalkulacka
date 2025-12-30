@@ -117,6 +117,10 @@ body {
     transform: scale(1.1);
 }
 
+.hidden {
+    display: none !important;
+}
+
 /* VIEW STRUCTURE */
 .view {
     flex: 1;
@@ -530,21 +534,13 @@ input:focus {
     color: var(--md-sys-color-on-surface-variant);
 }
 
-/* WEIGHT CHART SVG */
+/* WEIGHT CHART SVG REFINEMENTS */
 .chart-container.growable-chart {
-    flex: 1;
+    flex: 3; /* Even more space */
     display: flex;
     flex-direction: column;
-    min-height: 250px; 
-    max-height: 50vh;
-}
-
-.svg-chart-wrapper {
-    width: 100%;
-    background-color: var(--md-sys-color-surface-container-high);
-    border-radius: var(--md-sys-shape-corner-medium);
-    padding: 10px;
-    margin-top: 10px;
+    min-height: 400px;
+    max-height: 70vh;
 }
 
 .svg-chart-wrapper.responsive-svg-container {
@@ -562,6 +558,7 @@ input:focus {
 .weight-svg text {
     font-family: var(--font-family);
     pointer-events: none;
+    font-weight: 500;
 }
 
 /* OVERLAYS */
