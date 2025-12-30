@@ -46,6 +46,7 @@ body {
     color: var(--md-sys-color-on-background);
     font-family: var(--font-family);
     height: 100vh;
+    height: 100dvh; /* Dynamic viewport height */
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -71,22 +72,21 @@ body {
 /* Version Display */
 #app-version-display {
     position: absolute;
-    bottom: 10px;
+    top: 10px;
     right: 15px;
     font-size: 0.7rem;
     color: var(--md-sys-color-outline);
     opacity: 0.5;
     pointer-events: none;
-    z-index: 50;
+    z-index: 1000;
 }
 
 .view {
     flex: 1;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
-    overflow: hidden; /* Ensure only internal parts scroll */
+    overflow: hidden;
 }
 
 .view.hidden {
@@ -98,10 +98,13 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding: 20px 24px 0 24px; /* Bottom padding removed for scroll */
+    padding: 20px 24px 0 24px;
     gap: 24px;
     height: 100%;
     overflow: hidden;
+    width: 100%;
+    max-width: 600px; /* Reasonable limit on desktop */
+    margin: 0 auto;
 }
 
 .overview-header h1 {
@@ -122,7 +125,6 @@ body {
     flex-direction: column;
     gap: 16px;
     width: 100%;
-    max-width: 400px;
     flex-shrink: 0;
 }
 
@@ -140,12 +142,7 @@ body {
     line-height: 1;
 }
 
-.separator {
-    font-size: 1.5rem;
-    color: var(--md-sys-color-outline);
-}
-
-.target-number {
+.separator, .target-number {
     font-size: 1.5rem;
     color: var(--md-sys-color-outline);
 }
@@ -179,7 +176,6 @@ body {
 /* Inputs styling */
 .input-group {
     width: 100%;
-    max-width: 400px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -215,7 +211,6 @@ input:focus {
     display: flex;
     gap: 16px;
     width: 100%;
-    max-width: 400px;
     flex-shrink: 0;
 }
 
@@ -254,14 +249,13 @@ input:focus {
     line-height: 1;
 }
 
-/* DAILY LIST CONTAINER (SCROLLABLE) */
-.daily-list-container {
-    flex: 1; /* Takes remaining space */
+/* LISTS (SCROLLABLE) */
+.daily-list-container, .stats-scroll-content {
+    flex: 1; 
     width: 100%;
-    max-width: 400px;
-    overflow-y: auto; /* Local scroll */
+    overflow-y: auto; 
     padding-bottom: 24px;
-    min-height: 0; /* Important for flex child scrolling */
+    min-height: 0; 
     display: flex;
     flex-direction: column;
 }
@@ -284,6 +278,7 @@ input:focus {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding-bottom: 24px;
 }
 
 .list-item {
@@ -293,6 +288,29 @@ input:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.recipe-item {
+    cursor: default;
+}
+
+.recipe-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.add-recipe-btn {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .item-name {
@@ -305,6 +323,18 @@ input:focus {
     color: var(--md-sys-color-primary);
 }
 
+/* Placeholders */
+.center-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    opacity: 0.5;
+    text-align: center;
+}
+.center-placeholder.hidden { display: none; }
+
 /* OVERLAYS */
 .overlay {
     position: fixed;
@@ -316,7 +346,6 @@ input:focus {
     z-index: 200;
     display: flex;
     flex-direction: column;
-    
     transform: translateY(110%);
     opacity: 0;
     transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease;
@@ -332,6 +361,7 @@ input:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .overlay-header h2 {
@@ -356,12 +386,15 @@ input:focus {
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .overlay-actions {
     margin-top: 32px;
     width: 100%;
-    max-width: 400px;
+    flex-shrink: 0;
 }
 
 .full-width-btn {
@@ -374,18 +407,6 @@ input:focus {
     font-size: 1.1rem;
     font-weight: 500;
     cursor: pointer;
-}
-
-/* Standard Content Layout */
-.content.center-text {
-    justify-content: center;
-    align-items: center;
-}
-.content.center-text h2 {
-    color: var(--md-sys-color-on-surface);
-    opacity: 0.6;
-    font-weight: 400;
-    font-size: 1.5rem;
 }
 
 /* Bottom Nav */
