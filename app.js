@@ -1,19 +1,29 @@
 // Definice verze pro cache management (při změně logiky zvýšit)
-const APP_VERSION = 'v1.4.0';
+const APP_VERSION = 'v1.5.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // State management
 let state = {
     date: null,
     total: 0,
+    target: 2200,
+    weight: null,
     activeView: 'overview' // overview | foods | stats
 };
 
 // DOM Elements
 const elements = {
-    totalDisplay: document.getElementById('total-display'),
+    // Dashboard
+    displayCurrent: document.getElementById('display-current'),
+    displayTarget: document.getElementById('display-target'),
+    progressFill: document.getElementById('progress-fill'),
+    
+    // Inputs
+    weightInput: document.getElementById('weight-input'),
     form: document.getElementById('add-form'),
-    input: document.getElementById('calorie-input'),
+    calorieInput: document.getElementById('calorie-input'),
+    
+    // Views & Nav
     views: {
         overview: document.getElementById('view-overview'),
         foods: document.getElementById('view-foods'),
@@ -32,13 +42,18 @@ const elements = {
 function init() {
     console.log(`[App] Init ${APP_VERSION}`);
     loadState();
-    // Default view if not present (migration from v1.0)
-    if (!state.activeView) {
-        state.activeView = 'overview';
-    }
+    
+    // Default values migration
+    if (!state.activeView) state.activeView = 'overview';
+    if (!state.target) state.target = 2200;
+    // weight can remain null/undefined
+
     checkDateAndReset();
     render();
-    document.getElementById('app-version-display').textContent = APP_VERSION;
+    
+    const versionDisplay = document.getElementById('app-version-display');
+    if (versionDisplay) versionDisplay.textContent = APP_VERSION;
+    
     registerServiceWorker();
     setupEventListeners();
 }
@@ -51,7 +66,7 @@ function loadState() {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
             const parsed = JSON.parse(stored);
-            state = { ...state, ...parsed }; // Merge to ensure new keys exist
+            state = { ...state, ...parsed };
         }
     } catch (e) {
         console.error("Chyba při načítání stavu", e);
@@ -79,7 +94,7 @@ function checkDateAndReset() {
         console.log(`[App] Nový den detekován. Reset: ${state.date} -> ${today}`);
         state.date = today;
         state.total = 0;
-        // Note: Active view is preserved
+        state.weight = null; // Reset váhy pro nový den
         saveState();
     }
 }
@@ -98,14 +113,35 @@ function switchView(viewName) {
  * Vykreslení UI podle stavu
  */
 function render() {
-    // Render Total (data)
-    if (elements.totalDisplay) {
-        elements.totalDisplay.textContent = state.total;
+    // 1. Render Dashboard Data
+    if (elements.displayCurrent) {
+        elements.displayCurrent.textContent = state.total;
+        elements.displayTarget.textContent = state.target;
+        
+        // Progress Bar Calculation
+        const percentage = Math.min((state.total / state.target) * 100, 100);
+        elements.progressFill.style.width = `${percentage}%`;
+        
+        // Color change based on completion (optional visual cue, staying simple for now)
+        if (state.total > state.target) {
+            elements.progressFill.classList.add('over-limit');
+        } else {
+            elements.progressFill.classList.remove('over-limit');
+        }
     }
 
-    // Render Views (visibility)
+    // 2. Render Inputs
+    if (elements.weightInput) {
+        // Only update if not focused to avoid cursor jumping, or if empty
+        if (document.activeElement !== elements.weightInput) {
+            elements.weightInput.value = state.weight || '';
+        }
+    }
+
+    // 3. Render Views (visibility)
     Object.keys(elements.views).forEach(key => {
         const el = elements.views[key];
+        if (!el) return;
         if (key === state.activeView) {
             el.classList.add('active');
             el.classList.remove('hidden');
@@ -115,9 +151,10 @@ function render() {
         }
     });
 
-    // Render Nav (active state)
+    // 4. Render Nav (active state)
     Object.keys(elements.navButtons).forEach(key => {
         const btn = elements.navButtons[key];
+        if (!btn) return;
         if (key === state.activeView) {
             btn.classList.add('active');
         } else {
@@ -131,13 +168,20 @@ function render() {
  */
 function addCalories(amount) {
     if (!amount || amount <= 0) return;
-    
-    // Pojistka: zkontrolovat datum před zápisem
     checkDateAndReset();
-
     state.total += parseInt(amount, 10);
     saveState();
     render();
+}
+
+/**
+ * Změna váhy
+ */
+function updateWeight(val) {
+    checkDateAndReset();
+    state.weight = val ? parseFloat(val) : null;
+    saveState();
+    // No explicit render call needed here usually if input is bound, but good practice
 }
 
 /**
@@ -147,19 +191,25 @@ function setupEventListeners() {
     if (elements.form) {
         elements.form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const val = elements.input.value;
+            const val = elements.calorieInput.value;
             if (val) {
                 addCalories(val);
-                elements.input.value = '';
-                elements.input.blur(); // Skryje klávesnici na mobilu
+                elements.calorieInput.value = '';
+                elements.calorieInput.blur();
             }
         });
     }
 
+    if (elements.weightInput) {
+        elements.weightInput.addEventListener('input', (e) => {
+            updateWeight(e.target.value);
+        });
+    }
+
     // Navigace
-    elements.navButtons.overview.addEventListener('click', () => switchView('overview'));
-    elements.navButtons.foods.addEventListener('click', () => switchView('foods'));
-    elements.navButtons.stats.addEventListener('click', () => switchView('stats'));
+    if (elements.navButtons.overview) elements.navButtons.overview.addEventListener('click', () => switchView('overview'));
+    if (elements.navButtons.foods) elements.navButtons.foods.addEventListener('click', () => switchView('foods'));
+    if (elements.navButtons.stats) elements.navButtons.stats.addEventListener('click', () => switchView('stats'));
 
     // Kontrola data při návratu do okna
     document.addEventListener('visibilitychange', () => {

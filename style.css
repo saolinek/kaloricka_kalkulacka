@@ -1,6 +1,6 @@
 :root {
-    /* Material Design 3 Light Theme Colors (Blue/Pro) */
-    --md-sys-color-primary: #005FAF; /* Sytá modrá pro akcenty */
+    /* Material Design 3 Light Theme Colors */
+    --md-sys-color-primary: #005FAF;
     --md-sys-color-on-primary: #FFFFFF;
     --md-sys-color-primary-container: #D6E3FF;
     --md-sys-color-on-primary-container: #001B3D;
@@ -10,19 +10,18 @@
     --md-sys-color-secondary-container: #D7E3F8;
     --md-sys-color-on-secondary-container: #101C2B;
 
-    --md-sys-color-background: #FDFBFF; /* Téměř bílá */
+    --md-sys-color-background: #FDFBFF;
     --md-sys-color-on-background: #1A1C1E;
     
     --md-sys-color-surface: #FDFBFF;
     --md-sys-color-on-surface: #1A1C1E;
     
-    --md-sys-color-surface-container: #EEF0F4; /* Světle šedá pro kontejnery */
+    --md-sys-color-surface-container: #EEF0F4;
     --md-sys-color-surface-container-high: #E8EBF1;
     
     --md-sys-color-outline: #74777F;
     --md-sys-color-outline-variant: #C4C6CF;
 
-    --md-sys-shape-corner-small: 8px;
     --md-sys-shape-corner-medium: 12px;
     --md-sys-shape-corner-large: 16px;
     --md-sys-shape-corner-extra-large: 28px;
@@ -63,7 +62,6 @@ body {
     display: flex;
     flex-direction: column;
     background-color: var(--md-sys-color-background);
-    /* Version Display Styling */
 }
 
 /* Version Display */
@@ -90,115 +88,157 @@ body {
     display: none;
 }
 
-/* Content Layout */
-.content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 24px;
+/* Overview Layout specific */
+.content.overview-layout {
+    justify-content: flex-start;
+    padding: 20px 24px;
+    gap: 20px;
 }
 
-.content.center-text h2 {
-    color: var(--md-sys-color-on-surface);
-    opacity: 0.6;
-    font-weight: 400;
+.overview-header h1 {
     font-size: 1.5rem;
-}
-
-h1 {
-    font-size: 2rem;
-    line-height: 2.5rem;
-    margin-bottom: 2.5rem;
+    margin: 0;
+    text-align: left;
     color: var(--md-sys-color-on-background);
     font-weight: 500;
-    text-align: center;
 }
 
-/* Form Styles */
-form {
+/* Dashboard Card (Calories + Progress) */
+.dashboard-card {
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    padding: 24px;
     display: flex;
     flex-direction: column;
+    gap: 16px;
     width: 100%;
-    max-width: 360px;
-    gap: 24px;
+    max-width: 400px;
 }
 
-/* M3 Input Field */
-input[type="number"] {
-    background: var(--md-sys-color-surface-container-high);
-    border: 2px solid transparent;
-    border-radius: var(--md-sys-shape-corner-extra-large);
-    color: var(--md-sys-color-on-surface);
+.dashboard-text {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+}
+
+.big-number {
     font-size: 3rem;
-    font-weight: 400;
-    text-align: center;
-    padding: 24px;
-    width: 100%;
-    outline: none;
-    transition: all 0.2s cubic-bezier(0.2, 0.0, 0, 1.0);
-    /* Jemnější stín pro light mode */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    font-weight: 500;
+    color: var(--md-sys-color-primary);
+    line-height: 1;
 }
 
-input[type="number"]:focus {
-    background: var(--md-sys-color-surface-container);
-    border-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-surface);
-}
-
-input[type="number"]::placeholder {
+.separator {
+    font-size: 1.5rem;
     color: var(--md-sys-color-outline);
 }
 
-/* M3 Filled Button */
+.target-number {
+    font-size: 1.5rem;
+    color: var(--md-sys-color-outline);
+}
+
+.unit {
+    font-size: 1rem;
+    color: var(--md-sys-color-outline);
+    font-weight: 500;
+}
+
+/* Progress Bar */
+.progress-container {
+    height: 12px;
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: 6px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--md-sys-color-primary);
+    width: 0%;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 6px;
+}
+
+.progress-fill.over-limit {
+    background-color: #BA1A1A; /* Error color for over limit */
+}
+
+/* Inputs styling */
+.input-group {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 0.875rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 500;
+    margin-left: 12px;
+}
+
+/* Shared Input Style */
+input {
+    background: var(--md-sys-color-surface-container-high);
+    border: 1px solid transparent;
+    border-radius: var(--md-sys-shape-corner-large);
+    color: var(--md-sys-color-on-surface);
+    font-size: 1.25rem;
+    padding: 16px;
+    width: 100%;
+    outline: none;
+    transition: all 0.2s;
+}
+
+input:focus {
+    background: var(--md-sys-color-surface-container);
+    border-color: var(--md-sys-color-primary);
+}
+
+/* Add Form Row */
+.add-row {
+    display: flex;
+    gap: 10px;
+}
+
+.add-row input {
+    flex: 1;
+    font-size: 1.5rem; /* Larger for calorie input */
+}
+
 button[type="submit"] {
     background-color: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
     border: none;
-    height: 56px;
-    border-radius: var(--md-sys-shape-corner-full);
-    font-size: 1rem;
-    font-weight: 500;
-    text-transform: none;
-    letter-spacing: 0.1px;
+    width: 64px;
+    border-radius: var(--md-sys-shape-corner-large);
     cursor: pointer;
-    box-shadow: 0 4px 8px 3px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s, box-shadow 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.2s;
 }
 
 button[type="submit"]:active {
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
-    box-shadow: none;
 }
 
-/* Overview Specific Footer (Total) */
-.overview-footer {
-    background-color: var(--md-sys-color-primary-container); /* Výraznější kontejner pro total */
-    margin: 16px;
-    padding: 24px;
-    border-radius: var(--md-sys-shape-corner-extra-large);
-    display: flex;
-    justify-content: space-between;
+/* Standard Content Layout for other tabs */
+.content.center-text {
+    justify-content: center;
     align-items: center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
-
-.total-label {
-    font-size: 1rem;
-    color: var(--md-sys-color-on-primary-container);
-    font-weight: 500;
-}
-
-.total-value {
-    font-size: 2rem;
-    font-weight: 500;
-    color: var(--md-sys-color-on-primary-container); /* Kontrastní barva pro text v kontejneru */
+.content.center-text h2 {
+    color: var(--md-sys-color-on-surface);
+    opacity: 0.6;
+    font-weight: 400;
+    font-size: 1.5rem;
 }
 
 /* M3 Bottom Navigation Bar */
@@ -215,7 +255,7 @@ button[type="submit"]:active {
 .nav-item {
     background: none;
     border: none;
-    color: var(--md-sys-color-on-surface-variant); /* Tmavší šedá pro neaktivní */
+    color: var(--md-sys-color-on-surface-variant);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -226,7 +266,6 @@ button[type="submit"]:active {
     gap: 4px;
 }
 
-/* Active Indicator */
 .nav-icon-container {
     width: 64px;
     height: 32px;
@@ -250,9 +289,8 @@ button[type="submit"]:active {
     color: var(--md-sys-color-on-surface-variant);
 }
 
-/* Active State */
 .nav-item.active .nav-icon-container {
-    background-color: var(--md-sys-color-secondary-container); /* Jemnější aktivní stav */
+    background-color: var(--md-sys-color-secondary-container);
 }
 
 .nav-item.active .nav-icon {
@@ -264,22 +302,7 @@ button[type="submit"]:active {
     font-weight: 700;
 }
 
-/* Inactive State Icons */
 .nav-item:not(.active) .nav-icon {
     color: var(--md-sys-color-on-surface-variant);
     opacity: 0.8;
-}
-
-.nav-item span.nav-icon {
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    width: 64px;
-    height: 32px;
-    border-radius: 16px;
-}
-
-.nav-item.active span.nav-icon {
-    background-color: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
 }
