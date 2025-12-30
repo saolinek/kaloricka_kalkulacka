@@ -1,4 +1,4 @@
-const APP_VERSION = 'v1.23.0';
+const APP_VERSION = 'v1.24.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // State management

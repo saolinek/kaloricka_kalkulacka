@@ -680,9 +680,15 @@ input:focus {
 }
 
 .nav-icon {
-    font-size: 1.25rem;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     line-height: 1;
+}
+
+.nav-icon svg {
+    width: 24px;
+    height: 24px;
 }
 
 .nav-label {
