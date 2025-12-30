@@ -32,6 +32,7 @@
     --md-sys-shape-corner-full: 9999px;
 
     --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --content-max-width: 600px;
 }
 
 * {
@@ -42,21 +43,26 @@
 }
 
 body {
-    background-color: var(--md-sys-color-background);
+    background-color: #E2E2E2; /* Neutral dark background for Desktop */
     color: var(--md-sys-color-on-background);
     font-family: var(--font-family);
     height: 100vh;
-    height: 100dvh; /* Dynamic viewport height */
+    height: 100dvh;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     overflow: hidden;
 }
 
+/* App Container - Centered on Desktop */
 #app {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
+    max-width: var(--content-max-width);
+    background-color: var(--md-sys-color-background);
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1); /* Desktop Shadow */
 }
 
 /* Views Container */
@@ -103,8 +109,6 @@ body {
     height: 100%;
     overflow: hidden;
     width: 100%;
-    max-width: 600px; /* Reasonable limit on desktop */
-    margin: 0 auto;
 }
 
 .overview-header h1 {
@@ -227,7 +231,11 @@ input:focus {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: transform 0.1s;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.action-btn:hover {
+    filter: brightness(0.95);
 }
 
 .action-btn:active {
@@ -258,6 +266,19 @@ input:focus {
     min-height: 0; 
     display: flex;
     flex-direction: column;
+}
+
+/* Scrollbar Styling */
+.daily-list-container::-webkit-scrollbar, 
+.stats-scroll-content::-webkit-scrollbar,
+.overlay-content::-webkit-scrollbar {
+    width: 6px;
+}
+.daily-list-container::-webkit-scrollbar-thumb, 
+.stats-scroll-content::-webkit-scrollbar-thumb,
+.overlay-content::-webkit-scrollbar-thumb {
+    background-color: var(--md-sys-color-outline-variant);
+    border-radius: 3px;
 }
 
 .daily-list-container h3 {
@@ -311,6 +332,11 @@ input:focus {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.1s;
+}
+
+.add-recipe-btn:hover {
+    transform: scale(1.1);
 }
 
 .item-name {
@@ -342,19 +368,63 @@ input:focus {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--md-sys-color-background);
+    background-color: rgba(0,0,0,0.5); /* Backdrop for Desktop */
     z-index: 200;
     display: flex;
     flex-direction: column;
-    transform: translateY(110%);
+    align-items: center;
+    justify-content: flex-end; /* Mobile Default: Bottom Sheet */
+    
+    visibility: hidden;
     opacity: 0;
-    transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0.3s;
 }
 
 .overlay.active {
-    transform: translateY(0);
+    visibility: visible;
     opacity: 1;
 }
+
+/* The actual card inside overlay */
+.overlay-card {
+    background-color: var(--md-sys-color-background);
+    width: 100%;
+    height: 90%; /* Mobile: almost full height */
+    border-radius: 24px 24px 0 0;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+}
+
+.overlay.active .overlay-card {
+    transform: translateY(0);
+}
+
+/* DESKTOP OVERRIDE for Overlays */
+@media (min-width: 600px) {
+    .overlay {
+        justify-content: center; /* Center modal on desktop */
+    }
+    
+    .overlay-card {
+        width: 100%;
+        max-width: 500px;
+        height: auto;
+        max-height: 80vh;
+        border-radius: 24px;
+        transform: scale(0.95); /* Scale effect for desktop */
+        opacity: 0;
+        transition: transform 0.2s, opacity 0.2s;
+    }
+    
+    .overlay.active .overlay-card {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 
 .overlay-header {
     padding: 24px;
@@ -387,8 +457,6 @@ input:focus {
     align-items: center;
     overflow-y: auto;
     width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
 }
 
 .overlay-actions {
@@ -407,6 +475,12 @@ input:focus {
     font-size: 1.1rem;
     font-weight: 500;
     cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.full-width-btn:hover {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
 }
 
 /* Bottom Nav */
@@ -419,6 +493,7 @@ input:focus {
     padding-bottom: env(safe-area-inset-bottom);
     z-index: 100;
     flex-shrink: 0;
+    /* On desktop, keep nav inside the app container, rounded top maybe? No, consistent bar is fine */
 }
 
 .nav-item {
@@ -456,6 +531,10 @@ input:focus {
     font-weight: 500;
     letter-spacing: 0.5px;
     color: var(--md-sys-color-on-surface-variant);
+}
+
+.nav-item:hover .nav-icon-container {
+    background-color: rgba(0,0,0,0.05);
 }
 
 .nav-item.active .nav-icon-container {

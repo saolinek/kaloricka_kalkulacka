@@ -102,53 +102,57 @@
         
         <!-- Overlay: Přidat kalorie -->
         <div id="overlay-add-cal" class="overlay">
-            <div class="overlay-header">
-                <h2>Přidat položku</h2>
-                <button id="btn-close-add-cal" class="icon-btn-close">✕</button>
-            </div>
-            <div class="overlay-content">
-                <form id="form-add-cal">
-                    <div class="input-group">
-                        <label for="input-name">Název položky</label>
-                        <input type="text" id="input-name" placeholder="Např. Banán" autocomplete="off" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="input-kcal-100">Kalorie na 100g</label>
-                        <input type="number" id="input-kcal-100" placeholder="0" inputmode="numeric" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="input-grams">Množství (g)</label>
-                        <input type="number" id="input-grams" placeholder="0" inputmode="numeric" required>
-                    </div>
-                    
-                    <div class="overlay-actions">
-                        <button type="submit" class="full-width-btn">Potvrdit a přidat</button>
-                    </div>
-                </form>
+            <div class="overlay-card">
+                <div class="overlay-header">
+                    <h2>Přidat položku</h2>
+                    <button id="btn-close-add-cal" class="icon-btn-close">✕</button>
+                </div>
+                <div class="overlay-content">
+                    <form id="form-add-cal">
+                        <div class="input-group">
+                            <label for="input-name">Název položky</label>
+                            <input type="text" id="input-name" placeholder="Např. Banán" autocomplete="off" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="input-kcal-100">Kalorie na 100g</label>
+                            <input type="number" id="input-kcal-100" placeholder="0" inputmode="numeric" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="input-grams">Množství (g)</label>
+                            <input type="number" id="input-grams" placeholder="0" inputmode="numeric" required>
+                        </div>
+                        
+                        <div class="overlay-actions">
+                            <button type="submit" class="full-width-btn">Potvrdit a přidat</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
         <!-- Overlay: Přidat recept -->
         <div id="overlay-add-recipe" class="overlay">
-             <div class="overlay-header">
-                <h2>Přidat recept</h2>
-                <button id="btn-close-add-recipe" class="icon-btn-close">✕</button>
-            </div>
-            <div class="overlay-content">
-                <form id="form-add-recipe">
-                    <div class="input-group">
-                        <label for="input-recipe-name">Název receptu</label>
-                        <input type="text" id="input-recipe-name" placeholder="Např. Ovesná kaše" autocomplete="off" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="input-recipe-kcal">Celkové kalorie</label>
-                        <input type="number" id="input-recipe-kcal" placeholder="0" inputmode="numeric" required>
-                    </div>
-                    
-                    <div class="overlay-actions">
-                        <button type="submit" class="full-width-btn">Uložit recept</button>
-                    </div>
-                </form>
+             <div class="overlay-card">
+                 <div class="overlay-header">
+                    <h2>Přidat recept</h2>
+                    <button id="btn-close-add-recipe" class="icon-btn-close">✕</button>
+                </div>
+                <div class="overlay-content">
+                    <form id="form-add-recipe">
+                        <div class="input-group">
+                            <label for="input-recipe-name">Název receptu</label>
+                            <input type="text" id="input-recipe-name" placeholder="Např. Ovesná kaše" autocomplete="off" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="input-recipe-kcal">Celkové kalorie</label>
+                            <input type="number" id="input-recipe-kcal" placeholder="0" inputmode="numeric" required>
+                        </div>
+                        
+                        <div class="overlay-actions">
+                            <button type="submit" class="full-width-btn">Uložit recept</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 

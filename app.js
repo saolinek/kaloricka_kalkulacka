@@ -1,5 +1,5 @@
 // Definice verze pro cache management
-const APP_VERSION = 'v1.10.0';
+const APP_VERSION = 'v1.11.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // State management
@@ -13,7 +13,7 @@ let state = {
     activeView: 'overview'
 };
 
-// DOM Cache (naplní se v init)
+// DOM Cache
 let el = {};
 
 function init() {
@@ -22,45 +22,32 @@ function init() {
     // 1. Cache DOM Elements
     el = {
         appVersion: document.getElementById('app-version-display'),
-        
-        // Displays
         current: document.getElementById('display-current'),
         target: document.getElementById('display-target'),
         progress: document.getElementById('progress-fill'),
-        
-        // Inputs
         weight: document.getElementById('weight-input'),
-        
-        // Containers
         dailyList: document.getElementById('daily-list'),
         dailyListContainer: document.getElementById('daily-list-container'),
         recipesList: document.getElementById('recipes-list'),
         recipesPlaceholder: document.getElementById('recipes-placeholder'),
         statsContent: document.getElementById('stats-content'),
         
-        // Views
         views: {
             overview: document.getElementById('view-overview'),
             foods: document.getElementById('view-foods'),
             stats: document.getElementById('view-stats')
         },
-        
-        // Nav Buttons
         nav: {
             overview: document.getElementById('nav-overview'),
             foods: document.getElementById('nav-foods'),
             stats: document.getElementById('nav-stats')
         },
         
-        // Overlay Triggers
+        // Buttons & Overlays
         btnOpenAddCal: document.getElementById('btn-open-add-cal'),
         btnOpenAddRecipe: document.getElementById('btn-open-add-recipe'),
-        
-        // Overlay Close Buttons
         btnCloseAddCal: document.getElementById('btn-close-add-cal'),
         btnCloseAddRecipe: document.getElementById('btn-close-add-recipe'),
-        
-        // Overlays
         overlayAddCal: document.getElementById('overlay-add-cal'),
         overlayAddRecipe: document.getElementById('overlay-add-recipe'),
         
@@ -76,20 +63,19 @@ function init() {
         inputRecipeKcal: document.getElementById('input-recipe-kcal')
     };
 
-    // 2. Set Version immediately
+    // 2. Set Version
     if (el.appVersion) {
         el.appVersion.textContent = APP_VERSION;
-        el.appVersion.style.display = 'block'; // Ensure visibility
     }
 
-    // 3. Load State & Logic
+    // 3. Load & Logic
     loadState();
     checkDateAndReset();
     
-    // 4. Bind Events (Once)
+    // 4. Bind Events
     bindEvents();
     
-    // 5. Initial Render
+    // 5. Render
     render();
     
     // 6. SW
@@ -126,18 +112,14 @@ function saveState() {
 
 function checkDateAndReset() {
     const today = new Date().toISOString().split('T')[0];
-    
     if (state.date && state.date !== today) {
-        // Save history
         state.history[state.date] = {
             total: getTotalCalories(),
             weight: state.weight
         };
-        // Reset day
         state.items = [];
         state.weight = null;
     }
-    
     state.date = today;
     saveState();
 }
@@ -173,12 +155,26 @@ function switchView(viewName) {
     render();
 }
 
-// --- UI ---
+// --- UI HELPERS ---
+
+function toggleOverlay(overlay, show) {
+    if (!overlay) return;
+    
+    if (show) {
+        overlay.classList.add('active');
+        const inp = overlay.querySelector('input');
+        if (inp) setTimeout(() => inp.focus(), 50);
+    } else {
+        overlay.classList.remove('active');
+        const form = overlay.querySelector('form');
+        if (form) form.reset();
+    }
+}
 
 function render() {
     const total = getTotalCalories();
 
-    // 1. Dashboard
+    // Dashboard
     if (el.current) el.current.textContent = total;
     if (el.target) el.target.textContent = state.target;
     if (el.progress) {
@@ -190,7 +186,7 @@ function render() {
         el.weight.value = state.weight || '';
     }
 
-    // 2. Daily List
+    // Daily List
     if (el.dailyList) {
         el.dailyList.innerHTML = '';
         if (state.items.length > 0) {
@@ -206,7 +202,7 @@ function render() {
         }
     }
 
-    // 3. Recipes
+    // Recipes
     if (el.recipesList) {
         el.recipesList.innerHTML = '';
         if (state.recipes.length > 0) {
@@ -219,7 +215,7 @@ function render() {
                         <span class="item-name">${r.name}</span>
                         <span class="item-kcal">${r.kcal} kcal</span>
                     </div>
-                    <button class="add-recipe-btn">+</button>
+                    <button class="add-recipe-btn" title="Přidat do denního přehledu">+</button>
                 `;
                 li.querySelector('.add-recipe-btn').addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -233,7 +229,7 @@ function render() {
         }
     }
 
-    // 4. Stats
+    // Stats
     if (el.statsContent) {
         const dates = Object.keys(state.history).sort().reverse();
         if (dates.length === 0) {
@@ -255,18 +251,15 @@ function render() {
         }
     }
 
-    // 5. Navigation & Views
+    // Views & Nav
     Object.keys(el.views).forEach(key => {
-        const view = el.views[key];
-        const nav = el.nav[key];
         const isActive = key === state.activeView;
-
-        if (view) {
-            view.classList.toggle('active', isActive);
-            view.classList.toggle('hidden', !isActive);
+        if (el.views[key]) {
+            el.views[key].classList.toggle('active', isActive);
+            el.views[key].classList.toggle('hidden', !isActive);
         }
-        if (nav) {
-            nav.classList.toggle('active', isActive);
+        if (el.nav[key]) {
+            el.nav[key].classList.toggle('active', isActive);
         }
     });
 }
@@ -278,23 +271,19 @@ function bindEvents() {
     if (el.nav.stats) el.nav.stats.onclick = () => switchView('stats');
 
     // Overlays
-    const toggleOverlay = (overlay, show) => {
-        if (!overlay) return;
-        overlay.classList.toggle('active', show);
-        if (show) {
-            const inp = overlay.querySelector('input');
-            if (inp) setTimeout(() => inp.focus(), 50);
-        } else {
-            const form = overlay.querySelector('form');
-            if (form) form.reset();
-        }
-    };
-
     if (el.btnOpenAddCal) el.btnOpenAddCal.onclick = () => toggleOverlay(el.overlayAddCal, true);
     if (el.btnCloseAddCal) el.btnCloseAddCal.onclick = () => toggleOverlay(el.overlayAddCal, false);
     
     if (el.btnOpenAddRecipe) el.btnOpenAddRecipe.onclick = () => toggleOverlay(el.overlayAddRecipe, true);
     if (el.btnCloseAddRecipe) el.btnCloseAddRecipe.onclick = () => toggleOverlay(el.overlayAddRecipe, false);
+
+    // Keyboard support (Escape to close)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            toggleOverlay(el.overlayAddCal, false);
+            toggleOverlay(el.overlayAddRecipe, false);
+        }
+    });
 
     // Forms
     if (el.formAddCal) el.formAddCal.onsubmit = (e) => {
@@ -329,19 +318,4 @@ function registerServiceWorker() {
     }
 }
 
-// Start
 document.addEventListener('DOMContentLoaded', init);
-
-/**
- * Registrace Service Workeru
- */
-function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('[SW] Registrován', reg.scope))
-            .catch(err => console.error('[SW] Chyba registrace', err));
-    }
-}
-
-// Spuštění
-init();
