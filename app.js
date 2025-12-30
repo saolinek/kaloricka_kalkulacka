@@ -2,7 +2,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-const APP_VERSION = 'v1.30.0';
+const APP_VERSION = 'v1.31.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // --- FIREBASE CONFIG ---
@@ -31,7 +31,7 @@ let state = {
     activeView: 'overview'
 };
 
-// Auth State
+// Auth State (Source of Truth)
 let currentUser = null;
 
 // --- DATE HELPERS (Local Time) ---
@@ -123,32 +123,61 @@ function init() {
 
     if (el.settingsVersion) el.settingsVersion.textContent = APP_VERSION;
 
+    // Hard Default State for Auth UI (Safety measure)
+    if (el.authUnlogged) el.authUnlogged.classList.remove('hidden');
+    if (el.authLogged) el.authLogged.classList.add('hidden');
+
     loadState();
     checkDateAndReset();
     bindEvents();
-    renderAuth(); // Force correct initial auth UI state
-    initAuth();
+    initAuth(); // Setup Firebase listener, it will call renderAuth(user)
     render();
     registerServiceWorker();
 }
 
-// --- LOGIC ---
+// --- AUTH LOGIC ---
 
 function initAuth() {
+    // SINGLE POINT OF TRUTH for Auth UI
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
-        renderAuth();
+        renderAuth(user);
     });
 }
 
 async function loginGoogle() {
     try { await signInWithPopup(auth, provider); }
-    catch (e) { console.error("Login fail", e); alert("Přihlášení selhalo."); }
+    catch (e) { console.error("Login fail", e); }
 }
 
 async function logoutUser() {
-    try { await signOut(auth); } catch (e) { console.error("Logout fail", e); }
+    try { 
+        await signOut(auth);
+        // UI will be updated by onAuthStateChanged
+    } catch (e) { 
+        console.error("Logout fail", e); 
+    }
 }
+
+function renderAuth(user) {
+    if (!el.authUnlogged || !el.authLogged) return;
+
+    if (user) {
+        // STATE: LOGGED IN
+        el.authUnlogged.classList.add('hidden');
+        el.authLogged.classList.remove('hidden');
+        if (el.userName) el.userName.textContent = user.displayName || "Uživatel";
+        if (el.userEmail) el.userEmail.textContent = user.email;
+    } else {
+        // STATE: NOT LOGGED IN (user === null)
+        el.authUnlogged.classList.remove('hidden');
+        el.authLogged.classList.add('hidden');
+        if (el.userName) el.userName.textContent = "";
+        if (el.userEmail) el.userEmail.textContent = "";
+    }
+}
+
+// --- DATA LOGIC ---
 
 function loadState() {
     try {
@@ -190,8 +219,14 @@ function switchView(viewName) { state.activeView = viewName; saveState(); render
 async function hardResetApp() {
     if (!confirm("⚠️ OPRAVDU vymazat všechna data, cache a restartovat aplikaci?")) return;
     localStorage.clear(); sessionStorage.clear();
-    if ('caches' in window) { const ns = await caches.keys(); await Promise.all(ns.map(n => caches.delete(n))); }
-    if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
+    if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+    }
+    if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(reg => reg.unregister()));
+    }
     window.location.reload(true);
 }
 
@@ -230,11 +265,6 @@ function renderSelectRecipeList() {
 }
 
 function openConsumeOverlay(recipe) { const { totalWeight, totalKcal } = calculateRecipeTotals(recipe.ingredients); el.consumeRecipeTitle.textContent = recipe.name; el.consumeRecipeInfo.textContent = `Celý recept: ${Math.round(totalKcal)} kcal / ${totalWeight} g`; el.inputConsumeGrams.value = totalWeight; toggleOverlay(el.overlayConsumeRecipe, true); }
-
-function renderAuth() {
-    if (currentUser) { el.authUnlogged.classList.add('hidden'); el.authLogged.classList.remove('hidden'); el.userName.textContent = currentUser.displayName || "Uživatel"; el.userEmail.textContent = currentUser.email; }
-    else { el.authUnlogged.classList.remove('hidden'); el.authLogged.classList.add('hidden'); }
-}
 
 function render() {
     const total = getTotalCalories();
@@ -280,7 +310,7 @@ function renderStats() {
     const wData = all.filter(d => state.history[d].weight).map(d => ({ date: d, value: state.history[d].weight }));
     let html = ''; if (wData.length > 0) html += `<div class="chart-container growable-chart"><h3>Vývoj váhy (kg)</h3><div class="svg-chart-wrapper responsive-svg-container">${generateWeightSVG(wData)}</div></div>`;
     else html += `<div class="chart-container"><p style="opacity:0.5; font-size:0.8rem;">Zatím žádná data o váze.</p></div>`;
-    html += '<h3 style="margin: 20px 0 10px 12px; font-size: 1.1rem; opacity: 0.8;">Historie dní</h3><ul class="daily-list" style="padding-bottom: 40px;">';
+    html += '<h3 style="margin: 20px 0 10px 12px; font-size: 1.1rem; opacity: 0.8; font-weight: 500;">Historie dní</h3><ul class="daily-list" style="flex-shrink: 0; padding-bottom: 40px;">';
     [...all].reverse().forEach(d => { const h = state.history[d]; const lbl = new Date(d).toLocaleDateString('cs-CZ', { weekday: 'short', day: 'numeric', month: 'numeric' }); html += `<li class="list-item-v2"><span>${lbl}</span><div style="text-align:right"><div>${Math.round(h.total)} kcal</div><div style="font-size:0.8em;opacity:0.7">${h.weight ? h.weight + ' kg' : ''}</div></div></li>`; });
     html += '</ul>'; el.statsContent.innerHTML = html;
 }
