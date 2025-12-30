@@ -464,6 +464,27 @@ input:focus {
     color: var(--md-sys-color-on-surface-variant);
 }
 
+/* WEIGHT CHART SVG */
+.svg-chart-wrapper {
+    width: 100%;
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.weight-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+}
+
+.weight-svg text {
+    font-family: var(--font-family);
+    pointer-events: none;
+}
+
 /* OVERLAYS */
 .overlay {
     position: absolute; /* Contain within #app */

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kalorie-app-v1.15';
+const CACHE_NAME = 'kalorie-app-v1.17';
 const ASSETS = [
     './',
     './index.html',

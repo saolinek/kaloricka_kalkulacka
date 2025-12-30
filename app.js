@@ -1,5 +1,4 @@
-// Definice verze pro cache management
-const APP_VERSION = 'v1.15.0';
+const APP_VERSION = 'v1.17.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // State management
@@ -39,7 +38,7 @@ function init() {
         recipesPlaceholder: document.getElementById('recipes-placeholder'),
         statsContent: document.getElementById('stats-content'),
         
-        // New: Selection List for Overview
+        // Selection List for Overview
         listSelectRecipe: document.getElementById('list-select-recipe'),
         placeholderSelectRecipe: document.getElementById('placeholder-select-recipe'),
         
@@ -122,6 +121,13 @@ function loadState() {
 
 function saveState() {
     try {
+        // Sync current day to history
+        if (state.date) {
+            state.history[state.date] = {
+                total: getTotalCalories(),
+                weight: state.weight
+            };
+        }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
         console.error("State save failed", e);
@@ -130,14 +136,19 @@ function saveState() {
 
 function checkDateAndReset() {
     const today = new Date().toISOString().split('T')[0];
+    
     if (state.date && state.date !== today) {
+        // Ensure old day is in history
         state.history[state.date] = {
             total: getTotalCalories(),
             weight: state.weight
         };
+        
+        // Reset current day
         state.items = [];
         state.weight = null;
     }
+    
     state.date = today;
     saveState();
 }
@@ -173,31 +184,40 @@ function switchView(viewName) {
     render();
 }
 
-function hardResetApp() {
-    if (!confirm("⚠️ Opravdu vymazat všechna data a resetovat aplikaci?\nTato akce je nevratná.")) return;
+/**
+ * 100% Reliable Hard Reset
+ */
+async function hardResetApp() {
+    if (!confirm("⚠️ OPRAVDU vymazat všechna data, cache a restartovat aplikaci?")) return;
     
-    console.log("Hard resetting application...");
+    console.log("CRITICAL: Hard reset sequence started...");
     
-    // 1. Clear LocalStorage
-    localStorage.clear();
-    
-    // 2. Clear Caches & Unregister SW
-    if ('caches' in window) {
-        caches.keys().then(names => {
-            for (let name of names) caches.delete(name);
-        });
-    }
-    
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-            for(let registration of registrations) {
-                registration.unregister();
-            }
-        }).finally(() => {
-            // 3. Reload
-            window.location.reload();
-        });
-    } else {
+    try {
+        // 1. Clear State
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log("- Data cleared");
+
+        // 2. Clear Caches (All versions)
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
+            console.log("- Caches deleted");
+        }
+
+        // 3. Unregister all Service Workers
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map(reg => reg.unregister()));
+            console.log("- Service Workers unregistered");
+        }
+
+        console.log("- Reset complete. Reloading...");
+        
+        // 4. Force Reload
+        window.location.reload(true);
+    } catch (err) {
+        console.error("Reset failed partially", err);
         window.location.reload();
     }
 }
@@ -228,7 +248,6 @@ function renderSelectRecipeList() {
         state.recipes.forEach(r => {
             const li = document.createElement('li');
             li.className = 'list-item recipe-item';
-            // Vylepšený styl pro výběr
             li.style.cursor = 'pointer';
             li.innerHTML = `
                 <div class="recipe-info">
@@ -240,7 +259,6 @@ function renderSelectRecipeList() {
                 </button>
             `;
             
-            // Clicking row or button adds the recipe
             const addAction = (e) => {
                 e.stopPropagation();
                 addItem(r.name, r.kcal);
@@ -253,6 +271,93 @@ function renderSelectRecipeList() {
             el.listSelectRecipe.appendChild(li);
         });
     }
+}
+
+/**
+ * Render: Statistiky (Charts)
+ */
+function renderStats() {
+    if (!el.statsContent) return;
+
+    // 1. Get History Data
+    const allDates = Object.keys(state.history).sort();
+    if (allDates.length === 0) {
+        el.statsContent.innerHTML = '<div class="center-placeholder"><p>Zatím nejsou k dispozici žádná data.</p></div>';
+        return;
+    }
+
+    // 2. Weight Chart Data (Only days with weight)
+    const weightData = allDates
+        .filter(d => state.history[d].weight !== null && state.history[d].weight !== undefined)
+        .map(d => ({ date: d, value: state.history[d].weight }));
+
+    let html = '';
+
+    if (weightData.length > 0) {
+        html += `<div class="chart-container">
+            <h3>Vývoj váhy (kg)</h3>
+            <div class="svg-chart-wrapper">
+                ${generateWeightSVG(weightData)}
+            </div>
+        </div>`;
+    } else {
+        html += `<div class="chart-container"><p style="opacity:0.5; font-size:0.8rem;">Zatím nejsou data o váze.</p></div>`;
+    }
+
+    html += '<h3 style="margin: 20px 0 10px 12px; font-size: 1rem; opacity: 0.7;">Historie dní</h3>';
+    html += '<ul class="daily-list">';
+    [...allDates].reverse().forEach(d => {
+        const h = state.history[d];
+        const dayLabel = new Date(d).toLocaleDateString('cs-CZ', { weekday: 'short', day: 'numeric', month: 'numeric' });
+        html += `<li class="list-item">
+            <span class="item-name">${dayLabel}</span>
+            <div style="text-align:right">
+                <div class="item-kcal">${h.total} kcal</div>
+                <div style="font-size:0.8em;opacity:0.7">${h.weight ? h.weight + ' kg' : '-'}</div>
+            </div>
+        </li>`;
+    });
+    html += '</ul>';
+
+    el.statsContent.innerHTML = html;
+}
+
+function generateWeightSVG(data) {
+    const width = 500;
+    const height = 200;
+    const padding = 40;
+
+    const weights = data.map(d => d.value);
+    const minW = Math.min(...weights) - 0.5;
+    const maxW = Math.max(...weights) + 0.5;
+    const rangeW = maxW - minW || 1;
+
+    const getX = (index) => padding + (index * (width - 2 * padding) / (data.length - 1 || 1));
+    const getY = (val) => height - padding - ((val - minW) / rangeW * (height - 2 * padding));
+
+    let points = data.map((d, i) => `${getX(i)},${getY(d.value)}`).join(' ');
+    
+    let svg = `<svg viewBox="0 0 ${width} ${height}" class="weight-svg">
+        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="#C4C6CF" />
+        <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="#C4C6CF" />
+        <polyline fill="none" stroke="var(--md-sys-color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+    `;
+
+    data.forEach((d, i) => {
+        const x = getX(i);
+        const y = getY(d.value);
+        svg += `<circle cx="${x}" cy="${y}" r="4" fill="var(--md-sys-color-primary)" />`;
+        if (data.length < 10 || i % Math.floor(data.length / 5) === 0) {
+            const dateLabel = new Date(d.date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
+            svg += `<text x="${x}" y="${height - 10}" font-size="12" text-anchor="middle" fill="#74777F">${dateLabel}</text>`;
+        }
+    });
+
+    svg += `<text x="${padding - 5}" y="${getY(minW + 0.5)}" font-size="12" text-anchor="end" fill="#74777F">${minW.toFixed(1)}</text>`;
+    svg += `<text x="${padding - 5}" y="${getY(maxW - 0.5)}" font-size="12" text-anchor="end" fill="#74777F">${maxW.toFixed(1)}</text>`;
+
+    svg += `</svg>`;
+    return svg;
 }
 
 function render() {
@@ -270,7 +375,7 @@ function render() {
         el.weight.value = state.weight || '';
     }
 
-    // Daily List
+    // Lists
     if (el.dailyList) {
         el.dailyList.innerHTML = '';
         if (state.items.length > 0) {
@@ -286,20 +391,14 @@ function render() {
         }
     }
 
-    // Recipes List (Management View)
     if (el.recipesList) {
         el.recipesList.innerHTML = '';
         if (state.recipes.length > 0) {
             el.recipesPlaceholder.classList.add('hidden');
             state.recipes.forEach(r => {
                 const li = document.createElement('li');
-                li.className = 'list-item'; // Standard list item, no action button in management view per request
-                li.innerHTML = `
-                    <div class="recipe-info">
-                        <span class="item-name">${r.name}</span>
-                        <span class="item-kcal">${r.kcal} kcal</span>
-                    </div>
-                `;
+                li.className = 'list-item';
+                li.innerHTML = `<div class="recipe-info"><span class="item-name">${r.name}</span><span class="item-kcal">${r.kcal} kcal</span></div>`;
                 el.recipesList.appendChild(li);
             });
         } else {
@@ -307,29 +406,10 @@ function render() {
         }
     }
 
-    // Stats
-    if (el.statsContent) {
-        const dates = Object.keys(state.history).sort().reverse();
-        if (dates.length === 0) {
-            el.statsContent.innerHTML = '<p style="text-align:center; opacity:0.6; margin-top:20px">Žádná historie.</p>';
-        } else {
-            let html = '<ul class="daily-list" style="padding-top:10px;">';
-            dates.forEach(d => {
-                const h = state.history[d];
-                html += `<li class="list-item">
-                    <span>${new Date(d).toLocaleDateString('cs-CZ')}</span>
-                    <div style="text-align:right">
-                        <div>${h.total} kcal</div>
-                        <div style="font-size:0.8em;opacity:0.7">${h.weight ? h.weight + ' kg' : '-'}</div>
-                    </div>
-                </li>`;
-            });
-            html += '</ul>';
-            el.statsContent.innerHTML = html;
-        }
+    if (state.activeView === 'stats') {
+        renderStats();
     }
 
-    // Views & Nav
     Object.keys(el.views).forEach(key => {
         const isActive = key === state.activeView;
         if (el.views[key]) {
@@ -343,32 +423,23 @@ function render() {
 }
 
 function bindEvents() {
-    // Debug Reset
     if (el.btnDebugReset) el.btnDebugReset.onclick = hardResetApp;
 
-    // Nav
     if (el.nav.overview) el.nav.overview.onclick = () => switchView('overview');
     if (el.nav.foods) el.nav.foods.onclick = () => switchView('foods');
     if (el.nav.stats) el.nav.stats.onclick = () => switchView('stats');
 
-    // Overview: Add Recipe -> Opens Selection
     if (el.btnOpenAddRecipe) el.btnOpenAddRecipe.onclick = () => {
         renderSelectRecipeList();
         toggleOverlay(el.overlaySelectRecipe, true);
     };
-    
-    // Recipes Tab: Create Recipe -> Opens Creation
+    if (el.btnOpenAddCal) el.btnOpenAddCal.onclick = () => toggleOverlay(el.overlayAddCal, true);
     if (el.btnCreateRecipe) el.btnCreateRecipe.onclick = () => toggleOverlay(el.overlayAddRecipe, true);
 
-    // Add Calories Overlay
-    if (el.btnOpenAddCal) el.btnOpenAddCal.onclick = () => toggleOverlay(el.overlayAddCal, true);
-
-    // Close Buttons
     if (el.btnCloseAddCal) el.btnCloseAddCal.onclick = () => toggleOverlay(el.overlayAddCal, false);
     if (el.btnCloseAddRecipe) el.btnCloseAddRecipe.onclick = () => toggleOverlay(el.overlayAddRecipe, false);
     if (el.btnCloseSelectRecipe) el.btnCloseSelectRecipe.onclick = () => toggleOverlay(el.overlaySelectRecipe, false);
 
-    // Keyboard (Escape)
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             toggleOverlay(el.overlayAddCal, false);
@@ -377,7 +448,6 @@ function bindEvents() {
         }
     });
 
-    // Forms
     if (el.formAddCal) el.formAddCal.onsubmit = (e) => {
         e.preventDefault();
         const n = el.inputName.value.trim();
@@ -396,18 +466,22 @@ function bindEvents() {
         if (n && c > 0) {
             createRecipe(n, c);
             toggleOverlay(el.overlayAddRecipe, false);
-            // Stay in recipes view to see the new recipe
         }
     };
 
-    // Weight
     if (el.weight) el.weight.oninput = (e) => updateWeight(e.target.value);
     if (el.btnWeightConfirm) {
         el.btnWeightConfirm.onclick = () => {
             if (el.weight) updateWeight(el.weight.value);
-            // Visual feedback could be added here later (e.g. flash button)
         };
     }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            checkDateAndReset();
+            render();
+        }
+    });
 }
 
 function registerServiceWorker() {
