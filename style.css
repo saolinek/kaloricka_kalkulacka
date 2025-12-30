@@ -153,7 +153,8 @@ body {
 .daily-list-container, 
 .stats-scroll-content,
 #recipes-list,
-.overlay-content {
+.overlay-content,
+.ingredients-list-form {
     flex: 1;
     overflow-y: auto; /* Local scroll */
     min-height: 0;    /* Flexbox scrolling fix */
@@ -254,9 +255,9 @@ body {
     background-color: var(--md-sys-color-secondary-container);
     color: var(--md-sys-color-on-secondary-container);
     border: none;
-    width: 56px; /* Same height as input usually */
-    height: 56px; /* Explicit height to match typical input padding */
-    border-radius: 16px; /* Matching corner radius */
+    width: 56px; 
+    height: 56px; 
+    border-radius: 16px;
     font-size: 1.5rem;
     cursor: pointer;
     display: flex;
@@ -356,70 +357,88 @@ input:focus {
     gap: 8px;
 }
 
-.list-item {
-    background-color: var(--md-sys-color-surface-container-high);
-    border-radius: var(--md-sys-shape-corner-medium);
-    padding: 16px;
+/* RECIPE & INGREDIENT CARDS (Material 3) */
+.recipe-card {
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-large);
+    padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-shrink: 0;
-}
-
-.recipe-item {
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.recipe-item:hover {
-    background-color: var(--md-sys-color-surface-container);
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    margin-bottom: 12px;
 }
 
 .recipe-info {
     display: flex;
     flex-direction: column;
+    gap: 4px;
 }
 
-.add-recipe-btn {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    font-size: 1.5rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.1s;
-}
-
-.add-recipe-btn:hover {
-    transform: scale(1.1);
-}
-
-.item-name {
+.recipe-name-main {
+    font-size: 1.1rem;
     font-weight: 500;
     color: var(--md-sys-color-on-surface);
 }
 
-.item-kcal {
-    font-weight: 500;
-    color: var(--md-sys-color-primary);
+.recipe-meta-sub {
+    font-size: 0.85rem;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.8;
 }
 
-.center-placeholder {
+/* INGREDIENT CARD IN FORM */
+.ingredient-card {
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 150px;
-    opacity: 0.5;
-    text-align: center;
-    flex-shrink: 0;
+    gap: 12px;
+    margin-bottom: 16px;
 }
-.center-placeholder.hidden { display: none; }
+
+.ingredient-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ingredient-header span {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.6;
+}
+
+.btn-remove-ing {
+    background: none;
+    border: none;
+    color: #BA1A1A;
+    font-size: 0.75rem;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.ing-inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.ing-name-input {
+    width: 100%;
+}
+
+/* OVERLAY REFINEMENTS */
+#consume-recipe-info {
+    font-size: 0.9rem;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 24px;
+    text-align: center;
+}
 
 /* Charts */
 .chart-container {
@@ -469,8 +488,8 @@ input:focus {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 250px; /* Base minimum */
-    max-height: 50vh; /* Don't let it be TOO huge on desktop */
+    min-height: 250px; 
+    max-height: 50vh;
 }
 
 .svg-chart-wrapper {
@@ -500,7 +519,7 @@ input:focus {
 
 /* OVERLAYS */
 .overlay {
-    position: absolute; /* Contain within #app */
+    position: absolute; 
     top: 0;
     left: 0;
     width: 100%;
@@ -555,9 +574,21 @@ input:focus {
     margin: 0;
 }
 
+.icon-btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--md-sys-color-on-surface-variant);
+    padding: 8px;
+    cursor: pointer;
+}
+
 .overlay-content {
     padding: 24px;
-    /* overflow-y handled by common class */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
 }
 
 .overlay-actions {
@@ -571,7 +602,7 @@ input:focus {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding-bottom: env(safe-area-inset-bottom); /* Safe area for mobile */
+    padding-bottom: env(safe-area-inset-bottom); 
     z-index: 100;
     flex-shrink: 0;
     border-top: 1px solid rgba(0,0,0,0.05);

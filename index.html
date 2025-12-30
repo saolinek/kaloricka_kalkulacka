@@ -111,6 +111,23 @@
                 </div>
             </section>
 
+            <!-- 4. NASTAVENÍ -->
+            <section id="view-settings" class="view hidden">
+                <div class="content overview-layout">
+                    <header class="overview-header">
+                        <h1>Nastavení</h1>
+                    </header>
+                    
+                    <div class="input-group">
+                        <label for="input-target-kcal">Denní kalorický příjem (kcal)</label>
+                        <div class="weight-row">
+                            <input type="number" id="input-target-kcal" placeholder="2200" inputmode="numeric">
+                            <button id="btn-save-settings" class="icon-btn-small" title="Uložit">✓</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
 
         <!-- OVERLAYS (Modals) -->
@@ -154,17 +171,23 @@
                 </div>
                 <div class="overlay-content">
                     <form id="form-add-recipe">
-                        <div class="input-group">
+                        <div class="input-group" style="margin-bottom: 20px;">
                             <label for="input-recipe-name">Název receptu</label>
-                            <input type="text" id="input-recipe-name" placeholder="Např. Ovesná kaše" autocomplete="off" required>
+                            <input type="text" id="input-recipe-name" placeholder="Např. Boloňská omáčka" autocomplete="off" required>
                         </div>
-                        <div class="input-group">
-                            <label for="input-recipe-kcal">Celkové kalorie</label>
-                            <input type="number" id="input-recipe-kcal" placeholder="0" inputmode="numeric" required>
+                        
+                        <div class="ingredients-section">
+                            <h3>Ingredience</h3>
+                            <div id="ingredients-list-form" class="ingredients-list-form">
+                                <!-- Ingredient rows added here -->
+                            </div>
+                            <button type="button" id="btn-add-ingredient" class="action-btn secondary" style="height: 50px; margin-top: 10px;">
+                                + Přidat ingredienci
+                            </button>
                         </div>
                         
                         <div class="overlay-actions">
-                            <button type="submit" class="full-width-btn">Uložit do kuchařky</button>
+                            <button type="submit" class="full-width-btn">Uložit recept</button>
                         </div>
                     </form>
                 </div>
@@ -189,6 +212,30 @@
            </div>
        </div>
 
+       <!-- Overlay: Zadat snězené množství receptu -->
+       <div id="overlay-consume-recipe" class="overlay">
+            <div class="overlay-card">
+                <div class="overlay-header">
+                    <h2 id="consume-recipe-title">Použít recept</h2>
+                    <button id="btn-close-consume-recipe" class="icon-btn-close">✕</button>
+                </div>
+                <div class="overlay-content">
+                    <form id="form-consume-recipe">
+                        <div class="input-group">
+                            <label for="input-consume-grams">Kolik gramů jsi snědl?</label>
+                            <input type="number" id="input-consume-grams" placeholder="0" inputmode="numeric" required>
+                        </div>
+                        <div id="consume-recipe-info" style="margin-top: 15px; font-size: 0.9rem; opacity: 0.7; text-align: center;">
+                            <!-- Info about total kcal/weight of recipe -->
+                        </div>
+                        <div class="overlay-actions">
+                            <button type="submit" class="full-width-btn">Přidat do přehledu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+       </div>
+
         <!-- Spodní navigace -->
         <nav class="bottom-nav">
             <button id="nav-overview" class="nav-item">
@@ -208,6 +255,12 @@
                     <span class="nav-icon">▲</span>
                 </span>
                 <span class="nav-label">Statistiky</span>
+            </button>
+            <button id="nav-settings" class="nav-item">
+                <span class="nav-icon-container">
+                    <span class="nav-icon">⚙</span>
+                </span>
+                <span class="nav-label">Nastavení</span>
             </button>
         </nav>
 
