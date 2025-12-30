@@ -1,5 +1,5 @@
 // Definice verze pro cache management
-const APP_VERSION = 'v1.11.0';
+const APP_VERSION = 'v1.13.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // State management
@@ -22,6 +22,8 @@ function init() {
     // 1. Cache DOM Elements
     el = {
         appVersion: document.getElementById('app-version-display'),
+        btnDebugReset: document.getElementById('btn-debug-reset'), // Debug Button
+        
         current: document.getElementById('display-current'),
         target: document.getElementById('display-target'),
         progress: document.getElementById('progress-fill'),
@@ -31,6 +33,10 @@ function init() {
         recipesList: document.getElementById('recipes-list'),
         recipesPlaceholder: document.getElementById('recipes-placeholder'),
         statsContent: document.getElementById('stats-content'),
+        
+        // New: Selection List for Overview
+        listSelectRecipe: document.getElementById('list-select-recipe'),
+        placeholderSelectRecipe: document.getElementById('placeholder-select-recipe'),
         
         views: {
             overview: document.getElementById('view-overview'),
@@ -43,13 +49,20 @@ function init() {
             stats: document.getElementById('nav-stats')
         },
         
-        // Buttons & Overlays
+        // Buttons
         btnOpenAddCal: document.getElementById('btn-open-add-cal'),
-        btnOpenAddRecipe: document.getElementById('btn-open-add-recipe'),
+        btnOpenAddRecipe: document.getElementById('btn-open-add-recipe'), // In Overview (opens selection)
+        btnCreateRecipe: document.getElementById('btn-create-recipe'),     // In Recipes Tab (opens creation)
+        
+        // Close Buttons
         btnCloseAddCal: document.getElementById('btn-close-add-cal'),
-        btnCloseAddRecipe: document.getElementById('btn-close-add-recipe'),
+        btnCloseAddRecipe: document.getElementById('btn-close-add-recipe'), // Closes creation
+        btnCloseSelectRecipe: document.getElementById('btn-close-select-recipe'), // Closes selection
+        
+        // Overlays
         overlayAddCal: document.getElementById('overlay-add-cal'),
-        overlayAddRecipe: document.getElementById('overlay-add-recipe'),
+        overlayAddRecipe: document.getElementById('overlay-add-recipe'),       // Creation
+        overlaySelectRecipe: document.getElementById('overlay-select-recipe'), // Selection
         
         // Forms
         formAddCal: document.getElementById('form-add-cal'),
@@ -137,7 +150,7 @@ function addItem(name, kcal) {
     render();
 }
 
-function addRecipe(name, kcal) {
+function createRecipe(name, kcal) {
     state.recipes.push({ id: Date.now(), name, kcal: parseInt(kcal) });
     saveState();
     render();
@@ -155,19 +168,85 @@ function switchView(viewName) {
     render();
 }
 
+function hardResetApp() {
+    if (!confirm("⚠️ Opravdu vymazat všechna data a resetovat aplikaci?\nTato akce je nevratná.")) return;
+    
+    console.log("Hard resetting application...");
+    
+    // 1. Clear LocalStorage
+    localStorage.clear();
+    
+    // 2. Clear Caches & Unregister SW
+    if ('caches' in window) {
+        caches.keys().then(names => {
+            for (let name of names) caches.delete(name);
+        });
+    }
+    
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            for(let registration of registrations) {
+                registration.unregister();
+            }
+        }).finally(() => {
+            // 3. Reload
+            window.location.reload();
+        });
+    } else {
+        window.location.reload();
+    }
+}
+
 // --- UI HELPERS ---
 
 function toggleOverlay(overlay, show) {
     if (!overlay) return;
-    
+    overlay.classList.toggle('active', show);
     if (show) {
-        overlay.classList.add('active');
         const inp = overlay.querySelector('input');
         if (inp) setTimeout(() => inp.focus(), 50);
     } else {
-        overlay.classList.remove('active');
         const form = overlay.querySelector('form');
         if (form) form.reset();
+    }
+}
+
+function renderSelectRecipeList() {
+    if (!el.listSelectRecipe) return;
+    el.listSelectRecipe.innerHTML = '';
+    
+    if (state.recipes.length === 0) {
+        if (el.placeholderSelectRecipe) el.placeholderSelectRecipe.classList.remove('hidden');
+    } else {
+        if (el.placeholderSelectRecipe) el.placeholderSelectRecipe.classList.add('hidden');
+        
+        state.recipes.forEach(r => {
+            const li = document.createElement('li');
+            li.className = 'list-item recipe-item';
+            // Vylepšený styl pro výběr
+            li.style.cursor = 'pointer';
+            li.innerHTML = `
+                <div class="recipe-info">
+                    <span class="item-name">${r.name}</span>
+                    <span class="item-kcal">${r.kcal} kcal</span>
+                </div>
+                <button class="add-recipe-btn" title="Použít recept">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+                </button>
+            `;
+            
+            // Clicking row or button adds the recipe
+            const addAction = (e) => {
+                e.stopPropagation();
+                addItem(r.name, r.kcal);
+                toggleOverlay(el.overlaySelectRecipe, false);
+            };
+            
+            li.addEventListener('click', addAction);
+            li.querySelector('.add-recipe-btn').addEventListener('click', addAction);
+            
+            el.listSelectRecipe.appendChild(li);
+        });
     }
 }
 
@@ -202,26 +281,20 @@ function render() {
         }
     }
 
-    // Recipes
+    // Recipes List (Management View)
     if (el.recipesList) {
         el.recipesList.innerHTML = '';
         if (state.recipes.length > 0) {
             el.recipesPlaceholder.classList.add('hidden');
             state.recipes.forEach(r => {
                 const li = document.createElement('li');
-                li.className = 'list-item recipe-item';
+                li.className = 'list-item'; // Standard list item, no action button in management view per request
                 li.innerHTML = `
                     <div class="recipe-info">
                         <span class="item-name">${r.name}</span>
                         <span class="item-kcal">${r.kcal} kcal</span>
                     </div>
-                    <button class="add-recipe-btn" title="Přidat do denního přehledu">+</button>
                 `;
-                li.querySelector('.add-recipe-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    addItem(r.name, r.kcal);
-                    switchView('overview');
-                });
                 el.recipesList.appendChild(li);
             });
         } else {
@@ -265,23 +338,37 @@ function render() {
 }
 
 function bindEvents() {
+    // Debug Reset
+    if (el.btnDebugReset) el.btnDebugReset.onclick = hardResetApp;
+
     // Nav
     if (el.nav.overview) el.nav.overview.onclick = () => switchView('overview');
     if (el.nav.foods) el.nav.foods.onclick = () => switchView('foods');
     if (el.nav.stats) el.nav.stats.onclick = () => switchView('stats');
 
-    // Overlays
-    if (el.btnOpenAddCal) el.btnOpenAddCal.onclick = () => toggleOverlay(el.overlayAddCal, true);
-    if (el.btnCloseAddCal) el.btnCloseAddCal.onclick = () => toggleOverlay(el.overlayAddCal, false);
+    // Overview: Add Recipe -> Opens Selection
+    if (el.btnOpenAddRecipe) el.btnOpenAddRecipe.onclick = () => {
+        renderSelectRecipeList();
+        toggleOverlay(el.overlaySelectRecipe, true);
+    };
     
-    if (el.btnOpenAddRecipe) el.btnOpenAddRecipe.onclick = () => toggleOverlay(el.overlayAddRecipe, true);
-    if (el.btnCloseAddRecipe) el.btnCloseAddRecipe.onclick = () => toggleOverlay(el.overlayAddRecipe, false);
+    // Recipes Tab: Create Recipe -> Opens Creation
+    if (el.btnCreateRecipe) el.btnCreateRecipe.onclick = () => toggleOverlay(el.overlayAddRecipe, true);
 
-    // Keyboard support (Escape to close)
+    // Add Calories Overlay
+    if (el.btnOpenAddCal) el.btnOpenAddCal.onclick = () => toggleOverlay(el.overlayAddCal, true);
+
+    // Close Buttons
+    if (el.btnCloseAddCal) el.btnCloseAddCal.onclick = () => toggleOverlay(el.overlayAddCal, false);
+    if (el.btnCloseAddRecipe) el.btnCloseAddRecipe.onclick = () => toggleOverlay(el.overlayAddRecipe, false);
+    if (el.btnCloseSelectRecipe) el.btnCloseSelectRecipe.onclick = () => toggleOverlay(el.overlaySelectRecipe, false);
+
+    // Keyboard (Escape)
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             toggleOverlay(el.overlayAddCal, false);
             toggleOverlay(el.overlayAddRecipe, false);
+            toggleOverlay(el.overlaySelectRecipe, false);
         }
     });
 
@@ -302,9 +389,9 @@ function bindEvents() {
         const n = el.inputRecipeName.value.trim();
         const c = parseFloat(el.inputRecipeKcal.value);
         if (n && c > 0) {
-            addRecipe(n, c);
+            createRecipe(n, c);
             toggleOverlay(el.overlayAddRecipe, false);
-            switchView('foods');
+            // Stay in recipes view to see the new recipe
         }
     };
 

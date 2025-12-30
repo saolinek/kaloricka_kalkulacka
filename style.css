@@ -87,6 +87,29 @@ body {
     z-index: 1000;
 }
 
+/* Debug Button Styling */
+#btn-debug-reset {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    background: transparent;
+    border: 1px solid #BA1A1A;
+    color: #BA1A1A;
+    font-size: 0.6rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 1000;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+#btn-debug-reset:hover {
+    opacity: 1;
+    background: #BA1A1A;
+    color: white;
+}
+
 .view {
     flex: 1;
     height: 100%;

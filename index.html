@@ -17,6 +17,9 @@
         <div id="views-container">
             <div id="app-version-display"></div>
             
+            <!-- DEBUG BUTTON -->
+            <button id="btn-debug-reset">RESET</button>
+            
             <!-- 1. PŘEHLED DNES -->
             <section id="view-overview" class="view">
                 <div class="content overview-layout">
@@ -65,16 +68,21 @@
                 </div>
             </section>
 
-            <!-- 2. POTRAVINY A RECEPTY -->
+            <!-- 2. RECEPTY (SPRÁVA) -->
             <section id="view-foods" class="view hidden">
                 <div class="content overview-layout">
                     <header class="overview-header">
                         <h1>Recepty</h1>
                     </header>
+
+                    <!-- Create New Recipe Button -->
+                    <button id="btn-create-recipe" class="full-width-btn" style="margin-bottom: 20px;">
+                        Vytvořit nový recept
+                    </button>
                     
                     <div id="recipes-placeholder" class="center-placeholder hidden">
                         <p>Zatím nemáš žádné recepty.</p>
-                        <p style="font-size: 0.8rem; opacity: 0.7;">Přidej je přes tlačítko v přehledu.</p>
+                        <p style="font-size: 0.8rem; opacity: 0.7;">Vytvoř si vlastní kuchařku.</p>
                     </div>
 
                     <ul id="recipes-list" class="daily-list">
@@ -98,7 +106,7 @@
 
         </div>
 
-        <!-- OVERLAYS (Full screen animations) -->
+        <!-- OVERLAYS (Modals) -->
         
         <!-- Overlay: Přidat kalorie -->
         <div id="overlay-add-cal" class="overlay">
@@ -130,11 +138,11 @@
             </div>
         </div>
 
-        <!-- Overlay: Přidat recept -->
+        <!-- Overlay: Vytvořit recept (Creation) -->
         <div id="overlay-add-recipe" class="overlay">
              <div class="overlay-card">
                  <div class="overlay-header">
-                    <h2>Přidat recept</h2>
+                    <h2>Nový recept</h2>
                     <button id="btn-close-add-recipe" class="icon-btn-close">✕</button>
                 </div>
                 <div class="overlay-content">
@@ -149,12 +157,30 @@
                         </div>
                         
                         <div class="overlay-actions">
-                            <button type="submit" class="full-width-btn">Uložit recept</button>
+                            <button type="submit" class="full-width-btn">Uložit do kuchařky</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+
+        <!-- Overlay: Vybrat recept (Selection for Daily Log) -->
+        <div id="overlay-select-recipe" class="overlay">
+            <div class="overlay-card">
+                <div class="overlay-header">
+                   <h2>Vybrat recept</h2>
+                   <button id="btn-close-select-recipe" class="icon-btn-close">✕</button>
+               </div>
+               <div class="overlay-content">
+                   <div id="placeholder-select-recipe" class="center-placeholder hidden" style="height: 100px;">
+                       <p>Žádné recepty k dispozici.</p>
+                   </div>
+                   <ul id="list-select-recipe" class="daily-list">
+                       <!-- Selectable recipes via JS -->
+                   </ul>
+               </div>
+           </div>
+       </div>
 
         <!-- Spodní navigace -->
         <nav class="bottom-nav">
