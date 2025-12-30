@@ -42,87 +42,73 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-body {
-    background-color: #E2E2E2; /* Neutral dark background for Desktop */
-    color: var(--md-sys-color-on-background);
-    font-family: var(--font-family);
-    height: 100vh;
-    height: 100dvh;
-    display: flex;
-    justify-content: center;
-    overflow: hidden;
-}
-
-/* App Container - Centered on Desktop */
-#app {
-    display: flex;
-    flex-direction: column;
+html, body {
     height: 100%;
     width: 100%;
-    max-width: var(--content-max-width);
-    background-color: var(--md-sys-color-background);
-    position: relative;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1); /* Desktop Shadow */
+    overflow: hidden; /* Prevent body scroll, handle inside app */
 }
 
-/* Views Container */
-#views-container {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--md-sys-color-background);
-}
-
-/* Version Display */
-#app-version-display {
-    position: absolute;
-    top: 10px;
-    left: 15px; /* Moved to left */
-    right: auto;
-    font-size: 0.7rem;
-    color: var(--md-sys-color-outline);
-    opacity: 0.5;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-/* Debug Button Styling */
-#btn-debug-reset {
-    position: absolute;
-    top: 10px;
-    left: 15px; /* Původně bylo right, ale verze je vpravo. Uživatel chce vpravo nahoře koš. */
-    /* Wait, user request: "chci aby bylo vpravo nahore byla to ikonka koše" */
-    /* Version is at top: 10px, right: 15px. Collision risk. */
-    /* I will move reset button to LEFT top to balance, OR move version to left? */
-    /* Let's keep version right (standard) and put trash icon NEXT to it or LEFT. */
-    /* Let's put trash icon at LEFT top as requested previously was left? No, request is RIGHT TOP. */
-    /* Okay, putting it RIGHT TOP. I need to move version display then or stack them. */
-    /* Let's move version display to bottom-left or top-left. */
-    /* Better: Trash icon top-right (action), Version top-left (info). */
-    
-    right: 15px; /* Move to right */
-    left: auto;
-    
-    background: transparent;
-    border: none;
-    color: #BA1A1A;
-    padding: 8px;
-    border-radius: 50%; /* Circular touch target */
-    cursor: pointer;
-    z-index: 1001; /* Higher than version */
-    opacity: 0.6;
-    transition: all 0.2s;
+body {
+    background-color: #E2E2E2; /* Desktop background */
+    color: var(--md-sys-color-on-background);
+    font-family: var(--font-family);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+/* APP CONTAINER */
+#app {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    max-width: var(--content-max-width);
+    background-color: var(--md-sys-color-background);
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    overflow: hidden; /* Clip everything to the app frame */
+}
+
+/* VIEWS WRAPPER */
+#views-container {
+    flex: 1; /* Takes all space between header area and nav */
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-top: 50px; /* Space for Version & Reset buttons */
+}
+
+/* HEADER ELEMENTS (Absolute) */
 #app-version-display {
-    /* Move version to left to avoid collision */
-    right: auto;
-    left: 15px;
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    font-size: 0.75rem;
+    color: var(--md-sys-color-outline);
+    font-weight: 500;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+#btn-debug-reset {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    left: auto;
+    background: transparent;
+    border: none;
+    color: #BA1A1A;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1001;
+    opacity: 0.6;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #btn-debug-reset:hover {
@@ -131,38 +117,59 @@ body {
     transform: scale(1.1);
 }
 
+/* VIEW STRUCTURE */
 .view {
     flex: 1;
-    height: 100%;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    width: 100%;
     overflow: hidden;
 }
 
 .view.hidden {
-    display: none;
+    display: none !important; /* Force hide */
 }
 
-/* Overview Layout */
+/* CONTENT LAYOUT */
 .content.overview-layout {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    padding: 20px 24px 0 24px;
-    gap: 24px;
-    height: 100%;
-    overflow: hidden;
-    width: 100%;
+    padding: 0 24px 20px 24px; /* Top padding handled by #views-container padding-top */
+    gap: 20px;
+    overflow: hidden; /* Contain scrollable children */
 }
 
 .overview-header h1 {
     font-size: 1.5rem;
     margin: 0;
-    text-align: left;
     color: var(--md-sys-color-on-background);
     font-weight: 500;
     flex-shrink: 0;
 }
+
+/* SCROLLABLE AREAS */
+.daily-list-container, 
+.stats-scroll-content,
+#recipes-list,
+.overlay-content {
+    flex: 1;
+    overflow-y: auto; /* Local scroll */
+    min-height: 0;    /* Flexbox scrolling fix */
+    padding-bottom: 10px;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-thumb {
+    background-color: var(--md-sys-color-outline-variant);
+    border-radius: 3px;
+}
+
+/* COMPONENTS */
 
 /* Dashboard Card */
 .dashboard-card {
@@ -221,7 +228,7 @@ body {
     background-color: #BA1A1A;
 }
 
-/* Inputs styling */
+/* Inputs */
 .input-group {
     width: 100%;
     display: flex;
@@ -235,6 +242,32 @@ body {
     color: var(--md-sys-color-on-surface-variant);
     font-weight: 500;
     margin-left: 12px;
+}
+
+.weight-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.icon-btn-small {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border: none;
+    width: 56px; /* Same height as input usually */
+    height: 56px; /* Explicit height to match typical input padding */
+    border-radius: 16px; /* Matching corner radius */
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.icon-btn-small:active {
+    transform: scale(0.95);
 }
 
 input {
@@ -254,7 +287,7 @@ input:focus {
     border-color: var(--md-sys-color-primary);
 }
 
-/* ACTIONS ROW */
+/* Buttons */
 .actions-row {
     display: flex;
     gap: 16px;
@@ -296,54 +329,31 @@ input:focus {
     color: var(--md-sys-color-on-secondary-container);
 }
 
-.btn-icon {
-    font-size: 1.5rem;
-    line-height: 1;
-}
-
-/* LISTS (SCROLLABLE) */
-.daily-list-container, .stats-scroll-content {
-    flex: 1; 
+.full-width-btn {
     width: 100%;
-    overflow-y: auto; 
-    padding-bottom: 24px;
-    min-height: 0; 
-    display: flex;
-    flex-direction: column;
-}
-
-/* Scrollbar Styling */
-.daily-list-container::-webkit-scrollbar, 
-.stats-scroll-content::-webkit-scrollbar,
-.overlay-content::-webkit-scrollbar {
-    width: 6px;
-}
-.daily-list-container::-webkit-scrollbar-thumb, 
-.stats-scroll-content::-webkit-scrollbar-thumb,
-.overlay-content::-webkit-scrollbar-thumb {
-    background-color: var(--md-sys-color-outline-variant);
-    border-radius: 3px;
-}
-
-.daily-list-container h3 {
-    font-size: 1rem;
-    color: var(--md-sys-color-on-surface-variant);
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    height: 56px;
+    border-radius: var(--md-sys-shape-corner-full);
+    border: none;
+    font-size: 1.1rem;
     font-weight: 500;
-    margin-bottom: 12px;
-    padding-left: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
     flex-shrink: 0;
 }
 
-.daily-list-container.hidden {
-    display: none;
+.full-width-btn:hover {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
 }
 
+/* Lists */
 .daily-list {
     list-style: none;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding-bottom: 24px;
 }
 
 .list-item {
@@ -353,10 +363,16 @@ input:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .recipe-item {
-    cursor: default;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.recipe-item:hover {
+    background-color: var(--md-sys-color-surface-container);
 }
 
 .recipe-info {
@@ -393,35 +409,78 @@ input:focus {
     color: var(--md-sys-color-primary);
 }
 
-/* Placeholders */
 .center-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 200px;
+    height: 150px;
     opacity: 0.5;
     text-align: center;
+    flex-shrink: 0;
 }
 .center-placeholder.hidden { display: none; }
 
+/* Charts */
+.chart-container {
+    background: var(--md-sys-color-surface-container);
+    padding: 16px;
+    border-radius: var(--md-sys-shape-corner-large);
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+.bar-chart {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 150px;
+    gap: 8px;
+}
+
+.bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    gap: 4px;
+}
+
+.bar {
+    width: 100%;
+    background-color: var(--md-sys-color-primary);
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+}
+
+.bar.over-limit {
+    background-color: #BA1A1A;
+}
+
+.bar-label {
+    font-size: 0.7rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
 /* OVERLAYS */
 .overlay {
-    position: fixed;
+    position: absolute; /* Contain within #app */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5); /* Backdrop for Desktop */
-    z-index: 200;
+    background-color: rgba(0,0,0,0.6);
+    z-index: 2000;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: flex-end; /* Mobile Default: Bottom Sheet */
+    justify-content: center;
     
     visibility: hidden;
     opacity: 0;
-    transition: opacity 0.3s ease, visibility 0.3s;
+    transition: opacity 0.2s, visibility 0.2s;
+    backdrop-filter: blur(2px);
 }
 
 .overlay.active {
@@ -429,115 +488,59 @@ input:focus {
     opacity: 1;
 }
 
-/* The actual card inside overlay */
 .overlay-card {
     background-color: var(--md-sys-color-background);
-    width: 100%;
-    height: 90%; /* Mobile: almost full height */
-    border-radius: 24px 24px 0 0;
+    width: 90%;
+    max-width: 450px;
+    max-height: 85%;
+    border-radius: 24px;
     display: flex;
     flex-direction: column;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+    overflow: hidden;
 }
 
 .overlay.active .overlay-card {
-    transform: translateY(0);
+    transform: scale(1);
 }
-
-/* DESKTOP OVERRIDE for Overlays */
-@media (min-width: 600px) {
-    .overlay {
-        justify-content: center; /* Center modal on desktop */
-    }
-    
-    .overlay-card {
-        width: 100%;
-        max-width: 500px;
-        height: auto;
-        max-height: 80vh;
-        border-radius: 24px;
-        transform: scale(0.95); /* Scale effect for desktop */
-        opacity: 0;
-        transition: transform 0.2s, opacity 0.2s;
-    }
-    
-    .overlay.active .overlay-card {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
 
 .overlay-header {
-    padding: 24px;
+    padding: 20px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
     flex-shrink: 0;
 }
 
 .overlay-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 500;
-    color: var(--md-sys-color-on-background);
-}
-
-.icon-btn-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--md-sys-color-on-surface-variant);
-    padding: 8px;
-    cursor: pointer;
+    margin: 0;
 }
 
 .overlay-content {
-    flex: 1;
-    padding: 0 24px 24px 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
-    width: 100%;
+    padding: 24px;
+    /* overflow-y handled by common class */
 }
 
 .overlay-actions {
-    margin-top: 32px;
-    width: 100%;
-    flex-shrink: 0;
+    margin-top: 24px;
 }
 
-.full-width-btn {
-    width: 100%;
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-    height: 56px;
-    border-radius: var(--md-sys-shape-corner-full);
-    border: none;
-    font-size: 1.1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.full-width-btn:hover {
-    background-color: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-}
-
-/* Bottom Nav */
+/* BOTTOM NAVIGATION */
 .bottom-nav {
-    height: 80px;
+    height: 70px;
     background-color: var(--md-sys-color-surface-container);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom); /* Safe area for mobile */
     z-index: 100;
     flex-shrink: 0;
-    /* On desktop, keep nav inside the app container, rounded top maybe? No, consistent bar is fine */
+    border-top: 1px solid rgba(0,0,0,0.05);
 }
 
 .nav-item {
@@ -555,17 +558,17 @@ input:focus {
 }
 
 .nav-icon-container {
-    width: 64px;
+    width: 56px;
     height: 32px;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s;
 }
 
 .nav-icon {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     display: block;
     line-height: 1;
 }
@@ -573,12 +576,6 @@ input:focus {
 .nav-label {
     font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.5px;
-    color: var(--md-sys-color-on-surface-variant);
-}
-
-.nav-item:hover .nav-icon-container {
-    background-color: rgba(0,0,0,0.05);
 }
 
 .nav-item.active .nav-icon-container {
@@ -592,9 +589,4 @@ input:focus {
 .nav-item.active .nav-label {
     color: var(--md-sys-color-on-surface);
     font-weight: 700;
-}
-
-.nav-item:not(.active) .nav-icon {
-    color: var(--md-sys-color-on-surface-variant);
-    opacity: 0.8;
 }

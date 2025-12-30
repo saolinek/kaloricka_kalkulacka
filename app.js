@@ -1,5 +1,5 @@
 // Definice verze pro cache management
-const APP_VERSION = 'v1.13.0';
+const APP_VERSION = 'v1.15.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // State management
@@ -27,7 +27,12 @@ function init() {
         current: document.getElementById('display-current'),
         target: document.getElementById('display-target'),
         progress: document.getElementById('progress-fill'),
+        
+        // Inputs
         weight: document.getElementById('weight-input'),
+        btnWeightConfirm: document.getElementById('btn-weight-confirm'),
+        
+        // Containers
         dailyList: document.getElementById('daily-list'),
         dailyListContainer: document.getElementById('daily-list-container'),
         recipesList: document.getElementById('recipes-list'),
@@ -397,6 +402,12 @@ function bindEvents() {
 
     // Weight
     if (el.weight) el.weight.oninput = (e) => updateWeight(e.target.value);
+    if (el.btnWeightConfirm) {
+        el.btnWeightConfirm.onclick = () => {
+            if (el.weight) updateWeight(el.weight.value);
+            // Visual feedback could be added here later (e.g. flash button)
+        };
+    }
 }
 
 function registerServiceWorker() {
