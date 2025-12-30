@@ -1,0 +1,16 @@
+{
+    "name": "Kalorická Kalkulačka",
+    "short_name": "Kalorie",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#1a1a1a",
+    "theme_color": "#222222",
+    "description": "Jednoduchý denní sčítač kalorií",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "192x192 512x512",
+            "type": "image/svg+xml"
+        }
+    ]
+}

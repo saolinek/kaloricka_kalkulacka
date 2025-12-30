@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalorická kalkulačka</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#222222">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+</head>
+<body>
+
+    <main id="app">
+        <div class="content">
+            <h1>Dnešní příjem</h1>
+            
+            <form id="add-form">
+                <input type="number" id="calorie-input" placeholder="0" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+                <button type="submit" id="add-btn">Přidat položku</button>
+            </form>
+        </div>
+
+        <footer class="sticky-footer">
+            <div class="total-label">Celkem dnes</div>
+            <div class="total-value"><span id="total-display">0</span> kcal</div>
+        </footer>
+    </main>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
