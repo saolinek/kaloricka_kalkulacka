@@ -37,9 +37,12 @@
                     </div>
 
                     <div class="input-group">
-                        <label for="weight-input">Váha (kg)</label>
+                        <label for="weight-input">Váha</label>
                         <div class="weight-row">
-                            <input type="number" id="weight-input" placeholder="0.0" step="0.1" inputmode="decimal">
+                            <div class="input-suffix-group">
+                                <input type="number" id="weight-input" placeholder="0.0" step="0.1" inputmode="decimal">
+                                <span class="suffix">kg</span>
+                            </div>
                             <button id="btn-weight-confirm" class="icon-btn-small" title="Uložit váhu">+</button>
                         </div>
                     </div>
@@ -92,13 +95,33 @@
 
             <!-- 3. STATISTIKY -->
             <section id="view-stats" class="view hidden">
-                <div class="content overview-layout">
-                    <header class="overview-header">
+                <div class="stats-fullscreen-layout">
+                    <header class="overview-header" style="padding: 20px 24px 0 24px;">
                         <h1>Statistiky</h1>
                     </header>
                     
-                    <div id="stats-content" class="stats-scroll-content">
-                        <!-- Charts inserted via JS -->
+                    <!-- Full Screen Chart Area -->
+                    <div id="stats-chart-container" class="stats-chart-wrapper">
+                        <!-- Chart SVG inserted via JS -->
+                    </div>
+
+                    <!-- Floating Button -->
+                    <button id="btn-show-history" class="btn-floating-history">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M144-144v-120h72v120h-72Zm144 0v-360h72v360h-72Zm144 0v-520h72v520h-72Zm144 0v-280h72v280h-72Zm144 0v-440h72v440h-72Z"/></svg>
+                        Zobrazit historii
+                    </button>
+
+                    <!-- Bottom Sheet Components -->
+                    <div id="sheet-backdrop" class="sheet-backdrop"></div>
+                    
+                    <div id="stats-history-sheet" class="bottom-sheet">
+                        <div class="sheet-header">
+                            <span class="sheet-title">Historie dní</span>
+                            <button id="btn-close-history" class="icon-btn-close">✕</button>
+                        </div>
+                        <div id="stats-history-list" class="sheet-content">
+                            <!-- List inserted via JS -->
+                        </div>
                     </div>
                 </div>
             </section>
@@ -111,9 +134,12 @@
                     </header>
                     
                     <div class="input-group">
-                        <label for="input-target-kcal">Denní kalorický příjem (kcal)</label>
+                        <label for="input-target-kcal">Denní kalorický příjem</label>
                         <div class="weight-row">
-                            <input type="number" id="input-target-kcal" placeholder="2200" inputmode="numeric">
+                            <div class="input-suffix-group">
+                                <input type="number" id="input-target-kcal" placeholder="2200" inputmode="numeric">
+                                <span class="suffix">kcal</span>
+                            </div>
                             <button id="btn-save-settings" class="icon-btn-small" title="Uložit">✓</button>
                         </div>
                     </div>
@@ -143,9 +169,6 @@
                             <span style="font-size: 0.9rem;">Verze aplikace</span>
                             <span id="settings-version-display" style="font-weight: 500; opacity: 0.8;">-</span>
                         </div>
-                        <button id="btn-hard-reset" class="action-btn secondary" style="height: 50px; width: 100%; border: 1px solid #BA1A1A; color: #BA1A1A;">
-                            Vymazat cache / reset aplikace
-                        </button>
                     </div>
                 </div>
             </section>
@@ -169,11 +192,17 @@
                         </div>
                         <div class="input-group">
                             <label for="input-kcal-100">Kalorie na 100g</label>
-                            <input type="number" id="input-kcal-100" placeholder="0" inputmode="numeric" required>
+                            <div class="input-suffix-group">
+                                <input type="number" id="input-kcal-100" placeholder="0" inputmode="numeric" required>
+                                <span class="suffix">kcal</span>
+                            </div>
                         </div>
                         <div class="input-group">
-                            <label for="input-grams">Množství (g)</label>
-                            <input type="number" id="input-grams" placeholder="0" inputmode="numeric" required>
+                            <label for="input-grams">Množství</label>
+                            <div class="input-suffix-group">
+                                <input type="number" id="input-grams" placeholder="0" inputmode="numeric" required>
+                                <span class="suffix">g</span>
+                            </div>
                         </div>
                         
                         <div class="overlay-actions">
@@ -244,8 +273,11 @@
                 <div class="overlay-content">
                     <form id="form-consume-recipe">
                         <div class="input-group">
-                            <label for="input-consume-grams">Kolik gramů jsi snědl?</label>
-                            <input type="number" id="input-consume-grams" placeholder="0" inputmode="numeric" required>
+                            <label for="input-consume-grams">Snědené množství</label>
+                            <div class="input-suffix-group">
+                                <input type="number" id="input-consume-grams" placeholder="0" inputmode="numeric" required>
+                                <span class="suffix">g</span>
+                            </div>
                         </div>
                         <div id="consume-recipe-info" style="margin-top: 15px; font-size: 0.9rem; opacity: 0.7; text-align: center;">
                             <!-- Info about total kcal/weight of recipe -->

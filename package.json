@@ -1,0 +1,12 @@
+{
+  "name": "kaloricka-kalkulacka",
+  "version": "1.0.0",
+  "description": "Kalorická kalkulačka",
+  "main": "app.js",
+  "scripts": {
+    "start": "serve ."
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
