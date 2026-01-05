@@ -3,7 +3,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
 
-const APP_VERSION = 'v1.42.0';
+const APP_VERSION = 'v1.43.0';
 const STORAGE_KEY = 'kaloricka_kalkulacka_state';
 
 // --- FIREBASE CONFIG ---
@@ -227,22 +227,6 @@ function deleteHistoryDay(date) {
     }
     
     delete state.history[date];
-    saveState();
-    render();
-}
-
-function deleteHistoryWeight(date) {
-    if (!confirm(`Smazat váhu pro ${new Date(date).toLocaleDateString('cs-CZ')}?`)) return;
-    
-    // If deleting today, clear current weight
-    if (date === state.date) {
-        state.weight = null;
-    }
-    
-    if (state.history[date]) {
-        state.history[date].weight = null;
-    }
-    
     saveState();
     render();
 }
@@ -481,13 +465,10 @@ function renderStats() {
             const li = document.createElement('li');
             li.className = 'list-item-v2';
             
-            // Weight Chip logic
+            // Weight Chip logic (No more delete button)
             let weightHtml = '';
             if (h.weight) {
-                weightHtml = `<div class="weight-chip">
-                                ${h.weight} kg 
-                                <button class="btn-del-weight" title="Smazat váhu">✕</button>
-                              </div>`;
+                weightHtml = `<div class="weight-chip">${h.weight} kg</div>`;
             }
 
             li.innerHTML = `
@@ -498,7 +479,7 @@ function renderStats() {
                         ${weightHtml}
                     </div>
                     <div class="stats-action">
-                        <button class="btn-mobile-touch delete btn-del-day" style="margin-left:8px;" title="Smazat den">
+                        <button class="btn-mobile-touch delete btn-del-day" style="margin-left:8px;" title="Vymazat den">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
                         </button>
                     </div>
@@ -507,9 +488,6 @@ function renderStats() {
             // Event Listeners
             const btnDelDay = li.querySelector('.btn-del-day');
             if (btnDelDay) btnDelDay.onclick = () => deleteHistoryDay(d);
-
-            const btnDelWeight = li.querySelector('.btn-del-weight');
-            if (btnDelWeight) btnDelWeight.onclick = () => deleteHistoryWeight(d);
 
             ul.appendChild(li);
         });
